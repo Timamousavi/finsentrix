@@ -143,72 +143,41 @@ For support, email support@finsentrix.com or join our [Discord community](https:
 
 ```
 finsentrix/
-├── data/
-│   ├── raw/                  # Raw collected data
-│   ├── processed/            # Processed data
-│   └── README.md            # Data documentation
-├── src/
-│   ├── api/                 # API implementation
-│   ├── data/                # Data collection
-│   ├── models/              # ML models
+├── data/                    # Data collection and processing
+│   ├── raw/                # Raw collected data
+│   ├── processed/          # Processed data
+│   └── README.md          # Data documentation
+├── src/                    # Source code
+│   ├── api/               # API implementation
+│   ├── config/            # Configuration files
+│   ├── database/          # Database models and migrations
+│   ├── models/            # ML models
 │   │   ├── event_detector.py
 │   │   ├── rumor_detector.py
 │   │   └── sentiment_analyzer.py
-│   └── utils/               # Utilities
+│   └── utils/             # Utilities
 │       ├── text_processor.py
 │       └── visualization.py
-├── tests/                   # Test suite
-├── docs/                    # Documentation
-├── requirements.txt         # Dependencies
-└── README.md               # Project documentation
+├── tests/                 # Test suite
+│   ├── unit/             # Unit tests
+│   ├── integration/      # Integration tests
+│   └── api/              # API tests
+├── docs/                  # Documentation
+│   ├── API.md            # API documentation
+│   ├── USER_GUIDE.md     # User guide
+│   ├── DEVELOPER_GUIDE.md # Developer guide
+│   └── ARCHITECTURE.md   # Architecture documentation
+├── frontend/             # Frontend application
+├── requirements.txt      # Dependencies
+└── README.md            # Project documentation
 ```
-
-## Documentation
-
-- [API Documentation](docs/API.md)
-- [User Guide](docs/USER_GUIDE.md)
-- [Developer Guide](docs/DEVELOPER_GUIDE.md)
-- [Data Documentation](data/README.md)
-
-## License
-
-This project is licensed under a dual-license agreement:
-- **Academic License**: Free for non-commercial, academic use
-- **Commercial License**: Requires a separate license agreement for commercial use
-
-For commercial licensing inquiries, please contact:
-- Email: licensing@finsentrix.com
-- Website: https://finsentrix.com/licensing
-
-See [LICENSE](LICENSE) for full terms and conditions.
-
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## Support
-
-For support, please contact:
-- Email: fatemehmousavy@ut.ac.ir
-- Documentation: https://docs.finsentrix.com
-- Community: https://community.finsentrix.com
-
-## Acknowledgments
-
-- [Hazm](https://github.com/sobhe/hazm) - Persian text processing library
-- [Transformers](https://huggingface.co/transformers/) - State-of-the-art NLP models
-- [FastAPI](https://fastapi.tiangolo.com/) - Modern web framework
 
 ## 📞 Contact
 
-For questions or suggestions, please open an issue or contact us at [fatemehmousavy@ut.ac.ir](mailto:fatemehmousavy@ut.ac.ir).
+For questions or suggestions, please open an issue or contact us at support@finsentrix.com.
 
 ---
 
 <div align="center">
-  <sub>Built with ❤️ by Tima Mousavi</sub>
+  <sub>Built with ❤️ by the FinSentrix Team</sub>
 </div> 
