@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, Text, Boolean
+from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, Text, Boolean, JSON
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from datetime import datetime
@@ -26,13 +26,14 @@ class Analysis(Base):
     text = Column(Text)
     sentiment_score = Column(Float)
     market_type = Column(String(50))  # 'stock', 'forex', 'crypto'
+    language = Column(String(10))  # 'en', 'fa'
     confidence = Column(Float)
     created_at = Column(DateTime, default=datetime.utcnow)
     user_id = Column(Integer, ForeignKey("users.id"))
 
     user = relationship("User", back_populates="analyses")
-    event = relationship("Event", back_populates="analysis", uselist=False)
-    rumor = relationship("Rumor", back_populates="analysis", uselist=False)
+    events = relationship("Event", back_populates="analysis")
+    rumors = relationship("Rumor", back_populates="analysis")
 
 class Event(Base):
     __tablename__ = "events"
@@ -40,11 +41,13 @@ class Event(Base):
     id = Column(Integer, primary_key=True, index=True)
     event_type = Column(String(50))  # 'earnings', 'merger', 'regulatory', etc.
     description = Column(Text)
-    impact_score = Column(Float)
+    confidence = Column(Float)
+    impact = Column(String(20))  # 'high', 'medium', 'low'
+    metadata = Column(JSON)  # Additional event data
     created_at = Column(DateTime, default=datetime.utcnow)
     analysis_id = Column(Integer, ForeignKey("analyses.id"))
 
-    analysis = relationship("Analysis", back_populates="event")
+    analysis = relationship("Analysis", back_populates="events")
 
 class Rumor(Base):
     __tablename__ = "rumors"
@@ -52,11 +55,14 @@ class Rumor(Base):
     id = Column(Integer, primary_key=True, index=True)
     rumor_type = Column(String(50))  # 'market_manipulation', 'insider_trading', etc.
     description = Column(Text)
-    credibility_score = Column(Float)
+    confidence = Column(Float)
+    verdict = Column(String(20))  # 'verified', 'unverified', 'debunked'
+    sources = Column(JSON)  # List of source texts
+    metadata = Column(JSON)  # Additional rumor data
     created_at = Column(DateTime, default=datetime.utcnow)
     analysis_id = Column(Integer, ForeignKey("analyses.id"))
 
-    analysis = relationship("Analysis", back_populates="rumor")
+    analysis = relationship("Analysis", back_populates="rumors")
 
 class MarketData(Base):
     __tablename__ = "market_data"
@@ -68,6 +74,7 @@ class MarketData(Base):
     volume = Column(Float)
     timestamp = Column(DateTime, default=datetime.utcnow)
     sentiment_impact = Column(Float)  # Correlation between sentiment and price movement
+    metadata = Column(JSON)  # Additional market data
 
 class Log(Base):
     __tablename__ = "logs"
@@ -77,5 +84,6 @@ class Log(Base):
     message = Column(Text)
     created_at = Column(DateTime, default=datetime.utcnow)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    metadata = Column(JSON)  # Additional log data
     
     user = relationship("User") 

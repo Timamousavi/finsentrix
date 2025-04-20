@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: FinSentrix API
-  description: API for financial market sentiment analysis
+  description: API for financial market sentiment analysis with event detection and rumor analysis
   version: 1.0.0
   contact:
     name: FinSentrix Team
@@ -53,13 +53,18 @@ components:
           type: string
           enum: [en, fa]
           description: Language code
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/Event'
+        rumors:
+          type: array
+          items:
+            $ref: '#/components/schemas/Rumor'
 
     Event:
       type: object
       properties:
-        id:
-          type: string
-          format: uuid
         type:
           type: string
           description: Event type
@@ -79,24 +84,22 @@ components:
     Rumor:
       type: object
       properties:
-        id:
+        type:
           type: string
-          format: uuid
-        text:
+          description: Rumor type
+        description:
           type: string
-          description: Rumor text
+          description: Rumor description
         confidence:
           type: number
           format: float
-        source:
+        verdict:
           type: string
-          description: Source of the rumor
-        status:
-          type: string
-          enum: [unverified, verified, debunked]
-        impact:
-          type: string
-          enum: [high, medium, low]
+          enum: [verified, unverified, debunked]
+        sources:
+          type: array
+          items:
+            type: string
         timestamp:
           type: string
           format: date-time
@@ -104,7 +107,7 @@ components:
 paths:
   /analyze:
     post:
-      summary: Analyze text sentiment
+      summary: Analyze text sentiment with events and rumors
       security:
         - BearerAuth: []
       requestBody:
@@ -137,6 +140,159 @@ paths:
                 $ref: '#/components/schemas/Error'
         '422':
           description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /events/detect:
+    post:
+      summary: Detect market events in text
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                text:
+                  type: string
+                market_type:
+                  type: string
+                  enum: [stock, forex, crypto]
+                language:
+                  type: string
+                  enum: [en, fa]
+      responses:
+        '200':
+          description: List of detected events
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  events:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Event'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /rumors/analyze:
+    post:
+      summary: Analyze potential market rumors
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                text:
+                  type: string
+                market_type:
+                  type: string
+                  enum: [stock, forex, crypto]
+                language:
+                  type: string
+                  enum: [en, fa]
+      responses:
+        '200':
+          description: List of detected rumors
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  rumors:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Rumor'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /events/timeline:
+    get:
+      summary: Get timeline of market events
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: market_type
+          in: query
+          schema:
+            type: string
+            enum: [stock, forex, crypto]
+        - name: start_date
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: end_date
+          in: query
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Timeline of events
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  events:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Event'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /rumors/alerts:
+    get:
+      summary: Get high-confidence rumor alerts
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: market_type
+          in: query
+          schema:
+            type: string
+            enum: [stock, forex, crypto]
+        - name: min_confidence
+          in: query
+          schema:
+            type: number
+            format: float
+      responses:
+        '200':
+          description: List of rumor alerts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  alerts:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Rumor'
+        '401':
+          description: Unauthorized
           content:
             application/json:
               schema:

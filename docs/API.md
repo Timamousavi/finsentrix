@@ -12,10 +12,10 @@ https://api.finsentrix.com/v1
 
 ## Authentication
 
-All endpoints require JWT authentication. Include the token in the Authorization header:
+All endpoints except `/token` require JWT authentication. Include the token in the Authorization header:
 
 ```
-Authorization: Bearer <your_token>
+Authorization: Bearer <token>
 ```
 
 To obtain a token, use the `/token` endpoint:
@@ -57,7 +57,35 @@ Response:
     "market_type": "stock",
     "market_region": "US",
     "language": "en",
-    "timestamp": "2024-04-20T12:00:00Z"
+    "timestamp": "2024-04-20T12:00:00Z",
+    "events": [
+        {
+            "type": "entity",
+            "text": "Central Bank",
+            "entity_type": "ORG",
+            "confidence": 0.95,
+            "sentiment_impact": -0.7
+        },
+        {
+            "type": "keyword",
+            "text": "interest rate",
+            "event_type": "central_bank",
+            "confidence": 1.0,
+            "sentiment_impact": -0.5
+        }
+    ],
+    "rumors": [
+        {
+            "type": "Rumor about company X",
+            "confidence": 0.90,
+            "verdict": "verified"
+        },
+        {
+            "type": "Similar rumor about X",
+            "confidence": 0.90,
+            "verdict": "verified"
+        }
+    ]
 }
 ```
 
@@ -124,18 +152,19 @@ Response:
 ```
 
 ### Event Analysis
-`POST /analyze/events`
 
-Analyze text for market events and their sentiment impact.
+```http
+POST /events/detect
+Content-Type: application/json
 
-**Request Body:**
-```json
 {
-    "text": "Central Bank announced interest rate hike"
+    "text": "Central Bank announced interest rate hike",
+    "market_type": "stock",
+    "language": "en"
 }
 ```
 
-**Response:**
+Response:
 ```json
 {
     "events": [
@@ -144,14 +173,16 @@ Analyze text for market events and their sentiment impact.
             "text": "Central Bank",
             "entity_type": "ORG",
             "confidence": 0.95,
-            "sentiment_impact": -0.7
+            "sentiment_impact": -0.7,
+            "timestamp": "2024-02-20T12:00:00Z"
         },
         {
             "type": "keyword",
             "text": "interest rate",
             "event_type": "central_bank",
             "confidence": 1.0,
-            "sentiment_impact": -0.5
+            "sentiment_impact": -0.5,
+            "timestamp": "2024-02-20T12:00:00Z"
         }
     ],
     "timestamp": "2024-02-20T12:00:00Z"
@@ -159,103 +190,92 @@ Analyze text for market events and their sentiment impact.
 ```
 
 ### Rumor Analysis
-`POST /analyze/rumors`
 
-Analyze messages for potential rumors and manipulation.
+```http
+POST /rumors/analyze
+Content-Type: application/json
 
-**Request Body:**
-```json
 {
-    "messages": [
-        {
-            "text": "Rumor about company X",
-            "timestamp": "2024-02-20T10:00:00Z"
-        },
-        {
-            "text": "Similar rumor about X",
-            "timestamp": "2024-02-20T11:00:00Z"
-        }
-    ],
-    "time_window": 12
+    "text": "Rumor about company X",
+    "market_type": "stock",
+    "language": "en"
 }
 ```
 
-**Response:**
+Response:
 ```json
 {
     "rumors": [
         {
-            "cluster_id": 1,
-            "messages": [...],
-            "spread_score": 0.8,
-            "time_span": "PT1H",
-            "pattern_matches": 2,
-            "confidence": 0.85,
-            "verdict": "Likely manipulation"
+            "type": "Rumor about company X",
+            "confidence": 0.90,
+            "verdict": "verified",
+            "sources": ["Rumor about company X"],
+            "timestamp": "2024-02-20T10:00:00Z"
         }
     ],
-    "visualization": "...",
     "timestamp": "2024-02-20T12:00:00Z"
 }
 ```
 
 ### Timeline Analysis
-`GET /timeline`
 
-Get sentiment timeline with event markers.
+```http
+GET /events/timeline
+Content-Type: application/json
 
-**Query Parameters:**
-- `start_time`: Optional start time (ISO format)
-- `end_time`: Optional end time (ISO format)
+{
+    "market_type": "stock",
+    "start_date": "2024-02-17",
+    "end_date": "2024-02-20"
+}
+```
 
-**Response:**
+Response:
 ```json
 {
-    "timeline": {
-        "events": [
-            {
-                "timestamp": "2024-02-17T12:00:00Z",
-                "text": "Central Bank Meeting",
-                "type": "central_bank",
-                "sentiment_impact": -0.5
-            }
-        ],
-        "sentiment_data": [
-            {
-                "timestamp": "2024-02-20T10:00:00Z",
-                "sentiment_score": 0.7
-            }
-        ]
-    },
+    "events": [
+        {
+            "type": "entity",
+            "text": "Central Bank",
+            "entity_type": "ORG",
+            "timestamp": "2024-02-17T12:00:00Z",
+            "sentiment_impact": -0.5
+        },
+        {
+            "type": "keyword",
+            "text": "interest rate",
+            "event_type": "central_bank",
+            "timestamp": "2024-02-20T12:00:00Z",
+            "sentiment_impact": -0.5
+        }
+    ],
     "visualization": "..."
 }
 ```
 
 ### Rumor Alerts
-`POST /alerts/rumors`
 
-Get alerts for high-confidence rumors.
+```http
+GET /rumors/alerts
+Content-Type: application/json
 
-**Query Parameters:**
-- `threshold`: Confidence threshold (default: 0.7)
+{
+    "market_type": "stock",
+    "min_confidence": 0.7
+}
+```
 
-**Response:**
+Response:
 ```json
 {
     "alerts": [
         {
-            "title": "⚠️ High-Confidence Rumor Detected",
-            "content": {
-                "message": "This phrase has appeared in 2 messages",
-                "time_span": "over the last 1.0 hours",
-                "confidence": "Confidence: 85.00%",
-                "verdict": "Verdict: Likely manipulation",
-                "pattern_matches": "Pattern matches: 2",
-                "sample_messages": [
-                    "Rumor about company X",
-                    "Similar rumor about X"
-                ]
-            }
+            "type": "Rumor about company X",
+            "description": "This phrase has appeared in 2 messages",
+            "confidence": 0.95,
+            "verdict": "verified",
+            "timestamp": "2024-02-20T12:00:00Z"
         }
     ],
     "timestamp": "2024-02-20T12:00:00Z"
@@ -311,6 +331,22 @@ Error responses include a message and error code:
    - Specify market region when known
    - Use appropriate language codes
    - Consider timezone differences
+
+6. **Event Analysis**
+   - Use event detection to identify market events
+   - Monitor event sentiment and impact
+   - Verify event sources
+
+7. **Rumor Analysis**
+   - Use rumor analysis to identify potential rumors
+   - Verify rumor sources
+   - Monitor rumor sentiment and impact
+
+8. **Security**
+   - All endpoints require authentication
+   - JWT tokens expire after 30 minutes
+   - HTTPS required for all requests
+   - Rate limiting per user and endpoint
 
 ## Support
 

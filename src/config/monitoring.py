@@ -3,7 +3,7 @@ import time
 from typing import Dict, Any
 from functools import wraps
 
-# Metrics
+# API Metrics
 API_REQUESTS = Counter(
     'api_requests_total',
     'Total number of API requests',
@@ -16,6 +16,7 @@ API_LATENCY = Histogram(
     ['endpoint', 'method']
 )
 
+# Model Metrics
 MODEL_PREDICTIONS = Counter(
     'model_predictions_total',
     'Total number of model predictions',
@@ -28,16 +29,48 @@ MODEL_CONFIDENCE = Gauge(
     ['model_type', 'market_type']
 )
 
+# Event Detection Metrics
 EVENT_DETECTIONS = Counter(
     'event_detections_total',
     'Total number of event detections',
+    ['event_type', 'market_type', 'impact']
+)
+
+EVENT_CONFIDENCE = Gauge(
+    'event_detection_confidence',
+    'Event detection confidence',
     ['event_type', 'market_type']
 )
 
+EVENT_PROCESSING_TIME = Histogram(
+    'event_processing_seconds',
+    'Time spent processing events',
+    ['event_type']
+)
+
+# Rumor Analysis Metrics
 RUMOR_DETECTIONS = Counter(
     'rumor_detections_total',
     'Total number of rumor detections',
-    ['status', 'market_type']
+    ['rumor_type', 'market_type', 'verdict']
+)
+
+RUMOR_CONFIDENCE = Gauge(
+    'rumor_detection_confidence',
+    'Rumor detection confidence',
+    ['rumor_type', 'market_type']
+)
+
+RUMOR_PROCESSING_TIME = Histogram(
+    'rumor_processing_seconds',
+    'Time spent processing rumors',
+    ['rumor_type']
+)
+
+RUMOR_SPREAD_SCORE = Gauge(
+    'rumor_spread_score',
+    'Rumor spread score',
+    ['rumor_type', 'market_type']
 )
 
 def start_monitoring(port: int = 9090):
@@ -83,19 +116,39 @@ def track_model_prediction(model_type: str, market_type: str, confidence: float)
         market_type=market_type
     ).set(confidence)
 
-def track_event_detection(event_type: str, market_type: str):
+def track_event_detection(event_type: str, market_type: str, impact: str, confidence: float, processing_time: float):
     """Track event detections."""
     EVENT_DETECTIONS.labels(
         event_type=event_type,
-        market_type=market_type
+        market_type=market_type,
+        impact=impact
     ).inc()
+    EVENT_CONFIDENCE.labels(
+        event_type=event_type,
+        market_type=market_type
+    ).set(confidence)
+    EVENT_PROCESSING_TIME.labels(
+        event_type=event_type
+    ).observe(processing_time)
 
-def track_rumor_detection(status: str, market_type: str):
+def track_rumor_detection(rumor_type: str, market_type: str, verdict: str, confidence: float, spread_score: float, processing_time: float):
     """Track rumor detections."""
     RUMOR_DETECTIONS.labels(
-        status=status,
-        market_type=market_type
+        rumor_type=rumor_type,
+        market_type=market_type,
+        verdict=verdict
     ).inc()
+    RUMOR_CONFIDENCE.labels(
+        rumor_type=rumor_type,
+        market_type=market_type
+    ).set(confidence)
+    RUMOR_SPREAD_SCORE.labels(
+        rumor_type=rumor_type,
+        market_type=market_type
+    ).set(spread_score)
+    RUMOR_PROCESSING_TIME.labels(
+        rumor_type=rumor_type
+    ).observe(processing_time)
 
 def get_metrics() -> Dict[str, Any]:
     """Get current metrics values."""
@@ -123,9 +176,9 @@ def get_metrics() -> Dict[str, Any]:
         },
         'rumor_detections': {
             'total': RUMOR_DETECTIONS._value.get(),
-            'by_status': {
-                st: RUMOR_DETECTIONS.labels(status=st)._value.get()
-                for st in set(labels['status'] for labels in RUMOR_DETECTIONS._metrics)
+            'by_type': {
+                rt: RUMOR_DETECTIONS.labels(rumor_type=rt)._value.get()
+                for rt in set(labels['rumor_type'] for labels in RUMOR_DETECTIONS._metrics)
             }
         }
     } 

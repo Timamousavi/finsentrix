@@ -74,6 +74,20 @@ def seed_database(db: Session):
         ]
     }
     
+    # Event types and their impacts
+    event_types = {
+        "stock": ["earnings", "merger", "regulatory", "market_news"],
+        "forex": ["central_bank", "economic_data", "political", "market_news"],
+        "crypto": ["regulation", "technology", "market_news", "adoption"]
+    }
+    
+    # Rumor types and verdicts
+    rumor_types = {
+        "stock": ["insider_trading", "market_manipulation", "false_news"],
+        "forex": ["market_manipulation", "false_news", "speculation"],
+        "crypto": ["pump_and_dump", "false_news", "scam"]
+    }
+    
     # Create analyses with events and rumors
     for _ in range(20):
         market_type = random.choice(["stock", "forex", "crypto"])
@@ -83,28 +97,42 @@ def seed_database(db: Session):
             text=text,
             sentiment_score=random.uniform(-1.0, 1.0),
             market_type=market_type,
+            language="fa",
             confidence=random.uniform(0.5, 1.0),
             user_id=random.choice([admin.id, test_user.id])
         )
         db.add(analysis)
         db.commit()
         
-        # Add event for some analyses
-        if random.random() > 0.5:
+        # Add events for some analyses
+        if random.random() > 0.3:  # 70% chance of having events
+            event_type = random.choice(event_types[market_type])
             event = Event(
-                event_type=random.choice(["earnings", "merger", "regulatory", "market_news"]),
+                event_type=event_type,
                 description=f"Event related to {text}",
-                impact_score=random.uniform(-1.0, 1.0),
+                confidence=random.uniform(0.7, 1.0),
+                impact=random.choice(["high", "medium", "low"]),
+                metadata={
+                    "source": "news",
+                    "reliability": random.uniform(0.7, 1.0)
+                },
                 analysis_id=analysis.id
             )
             db.add(event)
         
-        # Add rumor for some analyses
-        if random.random() > 0.7:
+        # Add rumors for some analyses
+        if random.random() > 0.5:  # 50% chance of having rumors
+            rumor_type = random.choice(rumor_types[market_type])
             rumor = Rumor(
-                rumor_type=random.choice(["market_manipulation", "insider_trading", "false_news"]),
+                rumor_type=rumor_type,
                 description=f"Rumor related to {text}",
-                credibility_score=random.uniform(0.0, 1.0),
+                confidence=random.uniform(0.7, 1.0),
+                verdict=random.choice(["verified", "unverified", "debunked"]),
+                sources=[text],
+                metadata={
+                    "spread_score": random.uniform(0.5, 1.0),
+                    "pattern_matches": random.randint(1, 5)
+                },
                 analysis_id=analysis.id
             )
             db.add(rumor)
@@ -134,7 +162,11 @@ def seed_database(db: Session):
                     price=new_price,
                     volume=random.uniform(1000, 100000),
                     timestamp=current_date,
-                    sentiment_impact=random.uniform(-1.0, 1.0)
+                    sentiment_impact=random.uniform(-1.0, 1.0),
+                    metadata={
+                        "source": "market_data",
+                        "reliability": random.uniform(0.8, 1.0)
+                    }
                 )
                 db.add(market_data)
                 

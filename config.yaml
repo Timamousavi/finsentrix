@@ -59,9 +59,51 @@ events:
     enabled: true
     confidence_threshold: 0.7
     max_events_per_text: 5
+    types:
+      stock:
+        - "earnings"
+        - "merger"
+        - "regulatory"
+        - "market_news"
+      forex:
+        - "central_bank"
+        - "economic_data"
+        - "political"
+        - "market_news"
+      crypto:
+        - "regulation"
+        - "technology"
+        - "market_news"
+        - "adoption"
+    impact_levels:
+      - "high"
+      - "medium"
+      - "low"
 
 rumors:
   detection:
     enabled: true
     confidence_threshold: 0.8
-    pattern_matches_threshold: 3 
+    pattern_matches_threshold: 3
+    types:
+      stock:
+        - "insider_trading"
+        - "market_manipulation"
+        - "false_news"
+      forex:
+        - "market_manipulation"
+        - "false_news"
+        - "speculation"
+      crypto:
+        - "pump_and_dump"
+        - "false_news"
+        - "scam"
+    verdicts:
+      - "verified"
+      - "unverified"
+      - "debunked"
+    spread_analysis:
+      enabled: true
+      time_window: 24  # hours
+      min_sources: 2
+      pattern_threshold: 0.7 
