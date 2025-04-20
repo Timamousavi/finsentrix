@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Form, Input, Switch, Button, Typography, message } from 'antd';
+import { Card, Form, Input, Switch, Button, Typography, message, Select } from 'antd';
 import axios from 'axios';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const { Title } = Typography;
+const { Option } = Select;
 
 interface Settings {
   apiKey: string;
@@ -16,6 +18,7 @@ interface Settings {
 const Settings: React.FC = () => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
+  const { language, setLanguage, t } = useLanguage();
 
   useEffect(() => {
     fetchSettings();
@@ -27,7 +30,7 @@ const Settings: React.FC = () => {
       form.setFieldsValue(response.data);
     } catch (error) {
       console.error('Failed to fetch settings:', error);
-      message.error('Failed to load settings');
+      message.error(t('settings', 'loadError'));
     }
   };
 
@@ -35,19 +38,23 @@ const Settings: React.FC = () => {
     setLoading(true);
     try {
       await axios.post('/api/settings', values);
-      message.success('Settings saved successfully');
+      message.success(t('settings', 'settingsSaved'));
     } catch (error) {
       console.error('Failed to save settings:', error);
-      message.error('Failed to save settings');
+      message.error(t('settings', 'settingsError'));
     } finally {
       setLoading(false);
     }
   };
 
+  const handleLanguageChange = (value: 'en' | 'fa') => {
+    setLanguage(value);
+  };
+
   return (
-    <div>
+    <div style={{ direction: language === 'fa' ? 'rtl' : 'ltr' }}>
       <Card>
-        <Title level={4}>Application Settings</Title>
+        <Title level={4}>{t('settings', 'title')}</Title>
         <Form
           form={form}
           layout="vertical"
@@ -61,15 +68,26 @@ const Settings: React.FC = () => {
           }}
         >
           <Form.Item
-            label="API Key"
+            label={t('settings', 'language')}
+            name="language"
+            initialValue={language}
+          >
+            <Select onChange={handleLanguageChange}>
+              <Option value="en">English</Option>
+              <Option value="fa">فارسی</Option>
+            </Select>
+          </Form.Item>
+
+          <Form.Item
+            label={t('settings', 'apiKey')}
             name="apiKey"
-            rules={[{ required: true, message: 'Please input your API key!' }]}
+            rules={[{ required: true, message: t('settings', 'apiKeyMessage') }]}
           >
             <Input.Password />
           </Form.Item>
 
           <Form.Item
-            label="Enable Notifications"
+            label={t('settings', 'enableNotifications')}
             name="enableNotifications"
             valuePropName="checked"
           >
@@ -77,40 +95,40 @@ const Settings: React.FC = () => {
           </Form.Item>
 
           <Form.Item
-            label="Sentiment Threshold"
+            label={t('settings', 'sentimentThreshold')}
             name="sentimentThreshold"
-            rules={[{ required: true, message: 'Please input sentiment threshold!' }]}
+            rules={[{ required: true, message: t('settings', 'sentimentThresholdMessage') }]}
           >
             <Input type="number" min={0} max={1} step={0.1} />
           </Form.Item>
 
           <Form.Item
-            label="Event Confidence Threshold"
+            label={t('settings', 'eventConfidenceThreshold')}
             name="eventConfidenceThreshold"
-            rules={[{ required: true, message: 'Please input event confidence threshold!' }]}
+            rules={[{ required: true, message: t('settings', 'eventConfidenceMessage') }]}
           >
             <Input type="number" min={0} max={1} step={0.1} />
           </Form.Item>
 
           <Form.Item
-            label="Rumor Spread Threshold"
+            label={t('settings', 'rumorSpreadThreshold')}
             name="rumorSpreadThreshold"
-            rules={[{ required: true, message: 'Please input rumor spread threshold!' }]}
+            rules={[{ required: true, message: t('settings', 'rumorSpreadMessage') }]}
           >
             <Input type="number" min={0} max={1} step={0.1} />
           </Form.Item>
 
           <Form.Item
-            label="Data Retention (Days)"
+            label={t('settings', 'dataRetention')}
             name="dataRetentionDays"
-            rules={[{ required: true, message: 'Please input data retention days!' }]}
+            rules={[{ required: true, message: t('settings', 'dataRetentionMessage') }]}
           >
             <Input type="number" min={1} max={365} />
           </Form.Item>
 
           <Form.Item>
             <Button type="primary" htmlType="submit" loading={loading}>
-              Save Settings
+              {t('settings', 'saveSettings')}
             </Button>
           </Form.Item>
         </Form>
