@@ -20,6 +20,10 @@ import logging
 from ..models.sentiment_analyzer import SentimentAnalyzer
 from ..utils.text_processor import FinancialTextProcessor
 from dotenv import load_dotenv
+from ..models.event_detector import EventDetector, RumorDetector
+from ..utils.visualization import create_timeline_visualization, create_rumor_analysis_visualization
+import pandas as pd
+import numpy as np
 
 # Load environment variables
 load_dotenv()
@@ -130,6 +134,10 @@ class BatchSentimentResponse(BaseModel):
 
 # Initialize sentiment analyzer
 analyzer = SentimentAnalyzer()
+
+# Initialize components
+event_detector = EventDetector()
+rumor_detector = RumorDetector()
 
 # Authentication functions
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -303,6 +311,128 @@ async def get_model_info(
         }
     except Exception as e:
         logger.error(f"Error getting model info: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/analyze/events")
+async def analyze_events(text: str):
+    """Analyze text for market events and their sentiment impact."""
+    try:
+        # Detect events
+        events = event_detector.detect_events(text)
+        
+        # Analyze sentiment for each event
+        for event in events:
+            sentiment_result = analyzer.analyze(event["text"])
+            event["sentiment_impact"] = sentiment_result["sentiment_score"]
+        
+        return {
+            "events": events,
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Error analyzing events: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/analyze/rumors")
+async def analyze_rumors(messages: List[dict], time_window: Optional[int] = 12):
+    """Analyze messages for potential rumors."""
+    try:
+        # Convert string timestamps to datetime objects
+        for msg in messages:
+            if isinstance(msg["timestamp"], str):
+                msg["timestamp"] = datetime.fromisoformat(msg["timestamp"])
+        
+        # Detect rumors
+        rumors = rumor_detector.detect_rumors(messages, time_window)
+        
+        # Create visualization
+        fig = create_rumor_analysis_visualization(rumors)
+        
+        return {
+            "rumors": rumors,
+            "visualization": fig.to_json(),
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Error analyzing rumors: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/timeline")
+async def get_timeline(
+    start_time: Optional[datetime] = None,
+    end_time: Optional[datetime] = None
+):
+    """Get sentiment timeline with event markers."""
+    try:
+        # Get sentiment data (mock for now)
+        sentiment_data = pd.DataFrame({
+            "timestamp": pd.date_range(start=start_time or datetime.now() - timedelta(days=7),
+                                     end=end_time or datetime.now(),
+                                     freq="H"),
+            "sentiment_score": np.random.normal(0, 1, 169)  # 7 days * 24 hours
+        })
+        
+        # Get events (mock for now)
+        events = [
+            {
+                "timestamp": datetime.now() - timedelta(days=3),
+                "text": "Central Bank Meeting",
+                "type": "central_bank",
+                "sentiment_impact": -0.5
+            },
+            {
+                "timestamp": datetime.now() - timedelta(days=1),
+                "text": "Earnings Report",
+                "type": "earnings",
+                "sentiment_impact": 0.7
+            }
+        ]
+        
+        # Create visualization
+        fig = create_timeline_visualization(events, sentiment_data)
+        
+        return {
+            "timeline": {
+                "events": events,
+                "sentiment_data": sentiment_data.to_dict("records")
+            },
+            "visualization": fig.to_json()
+        }
+    except Exception as e:
+        logger.error(f"Error generating timeline: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/alerts/rumors")
+async def get_rumor_alerts(threshold: Optional[float] = 0.7):
+    """Get alerts for high-confidence rumors."""
+    try:
+        # Get recent rumors (mock for now)
+        rumors = [
+            {
+                "confidence": 0.85,
+                "messages": [
+                    {"text": "Rumor about company X", "timestamp": datetime.now() - timedelta(hours=1)},
+                    {"text": "Similar rumor about X", "timestamp": datetime.now() - timedelta(hours=2)}
+                ],
+                "time_span": timedelta(hours=1),
+                "pattern_matches": 2,
+                "verdict": "Likely manipulation"
+            }
+        ]
+        
+        # Filter high-confidence rumors
+        alerts = [
+            create_rumor_alert(rumor, threshold)
+            for rumor in rumors
+            if rumor["confidence"] >= threshold
+        ]
+        
+        return {
+            "alerts": [alert for alert in alerts if alert is not None],
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Error generating rumor alerts: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 # Error handlers

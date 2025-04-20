@@ -7,10 +7,12 @@ Welcome to FinSentrix (FSX), your comprehensive solution for global financial ma
 ## Table of Contents
 1. [Getting Started](#getting-started)
 2. [Basic Usage](#basic-usage)
-3. [Advanced Features](#advanced-features)
-4. [Best Practices](#best-practices)
-5. [Troubleshooting](#troubleshooting)
-6. [FAQ](#faq)
+3. [Event Detection](#event-detection)
+4. [Rumor Analysis](#rumor-analysis)
+5. [Advanced Features](#advanced-features)
+6. [Best Practices](#best-practices)
+7. [Troubleshooting](#troubleshooting)
+8. [FAQ](#faq)
 
 ## Getting Started
 
@@ -45,43 +47,94 @@ Welcome to FinSentrix (FSX), your comprehensive solution for global financial ma
    # Edit .env with your API keys
    ```
 
-## Basic Usage
-
-### Analyzing Single Text
+### Authentication
 
 ```python
-from finsentrix import SentimentAnalyzer
+from finsentrix import FinSentrix
 
-# Initialize analyzer
-analyzer = SentimentAnalyzer()
-
-# Analyze text
-result = analyzer.analyze(
-    text="Market showing positive trends",
-    language="en",  # Optional: "en" or "fa"
-    market_type="stock"  # Optional: "stock", "forex", "crypto"
-)
-
-print(f"Sentiment: {result.sentiment}")
-print(f"Confidence: {result.confidence}")
+# Initialize with your API key
+fsx = FinSentrix(api_key="your_api_key")
 ```
 
-### Batch Analysis
+## Basic Usage
+
+### Sentiment Analysis
 
 ```python
+# Analyze single text
+result = fsx.analyze("Bitcoin shows strong bullish momentum")
+print(f"Sentiment: {result.sentiment}")
+print(f"Confidence: {result.confidence}")
+
 # Analyze multiple texts
-results = analyzer.analyze_batch(
-    texts=[
-        "Market showing positive trends",
-        "Bitcoin price dropping"
-    ],
-    market_type="crypto"
+results = fsx.analyze_batch([
+    "Stock market rally continues",
+    "Market correction expected"
+])
+```
+
+## Event Detection
+
+### Market Event Analysis
+
+```python
+# Detect events in text
+events = fsx.detect_events(
+    "Central Bank announced interest rate hike of 0.5%"
 )
 
-for result in results:
-    print(f"Text: {result.text}")
-    print(f"Sentiment: {result.sentiment}")
-    print(f"Confidence: {result.confidence}")
+# Print event details
+for event in events:
+    print(f"Event: {event.text}")
+    print(f"Type: {event.type}")
+    print(f"Sentiment Impact: {event.sentiment_impact}")
+```
+
+### Timeline Visualization
+
+```python
+# Get sentiment timeline with events
+timeline = fsx.get_timeline(
+    start_time="2024-02-01",
+    end_time="2024-02-20"
+)
+
+# Display interactive timeline
+timeline.show()
+```
+
+## Rumor Analysis
+
+### Detecting Rumors
+
+```python
+# Analyze messages for rumors
+messages = [
+    {"text": "Rumor about company X", "timestamp": "2024-02-20T10:00:00Z"},
+    {"text": "Similar rumor about X", "timestamp": "2024-02-20T11:00:00Z"}
+]
+
+rumors = fsx.detect_rumors(messages)
+
+# Print rumor analysis
+for rumor in rumors:
+    print(f"Confidence: {rumor.confidence}")
+    print(f"Verdict: {rumor.verdict}")
+    print(f"Pattern Matches: {rumor.pattern_matches}")
+```
+
+### Rumor Alerts
+
+```python
+# Get high-confidence rumor alerts
+alerts = fsx.get_rumor_alerts(threshold=0.7)
+
+# Process alerts
+for alert in alerts:
+    print(f"Alert: {alert.title}")
+    print(f"Message: {alert.content.message}")
+    print(f"Time Span: {alert.content.time_span}")
+    print(f"Sample Messages: {alert.content.sample_messages}")
 ```
 
 ## Advanced Features
@@ -90,19 +143,19 @@ for result in results:
 
 ```python
 # Stock market analysis
-stock_result = analyzer.analyze(
+stock_result = fsx.analyze(
     text="AAPL showing strong growth",
     market_type="stock"
 )
 
 # Forex market analysis
-forex_result = analyzer.analyze(
+forex_result = fsx.analyze(
     text="EUR/USD expected to rise",
     market_type="forex"
 )
 
 # Crypto market analysis
-crypto_result = analyzer.analyze(
+crypto_result = fsx.analyze(
     text="Bitcoin reaching new ATH",
     market_type="crypto"
 )
@@ -112,13 +165,13 @@ crypto_result = analyzer.analyze(
 
 ```python
 # English text
-en_result = analyzer.analyze(
+en_result = fsx.analyze(
     text="Market showing positive trends",
     language="en"
 )
 
 # Persian text
-fa_result = analyzer.analyze(
+fa_result = fsx.analyze(
     text="بازار امروز روند مثبتی دارد",
     language="fa"
 )
@@ -143,6 +196,41 @@ def handle_sentiment_update(update):
     print(f"New sentiment update: {update}")
 ```
 
+### Custom Event Types
+
+```python
+# Add custom event types
+fsx.add_event_type(
+    name="custom_event",
+    keywords=["custom", "event", "keywords"]
+)
+```
+
+### Rumor Pattern Customization
+
+```python
+# Add custom rumor patterns
+fsx.add_rumor_patterns([
+    "custom pattern 1",
+    "custom pattern 2"
+])
+```
+
+### Visualization Customization
+
+```python
+# Customize timeline visualization
+timeline = fsx.get_timeline(
+    start_time="2024-02-01",
+    end_time="2024-02-20",
+    title="Custom Timeline",
+    colors={
+        "sentiment": "blue",
+        "events": "red"
+    }
+)
+```
+
 ## Best Practices
 
 1. **Text Preparation**
@@ -165,6 +253,26 @@ def handle_sentiment_update(update):
    - Cache results when possible
    - Monitor API usage
 
+5. **Event Detection**
+   - Use clear, concise text for better event detection
+   - Include relevant context in event descriptions
+   - Monitor event sentiment impact over time
+
+6. **Rumor Analysis**
+   - Set appropriate confidence thresholds
+   - Consider message volume and spread
+   - Monitor pattern matches and time spans
+
+7. **Data Collection**
+   - Collect data from diverse sources
+   - Maintain proper timestamps
+   - Include message metadata when available
+
+8. **Visualization**
+   - Use appropriate time ranges
+   - Customize colors for better visibility
+   - Include relevant annotations
+
 ## Troubleshooting
 
 ### Common Issues
@@ -183,6 +291,18 @@ def handle_sentiment_update(update):
    - Verify market type support
    - Check market-specific terminology
    - Consider market context
+
+4. **Event Detection**
+   - Issue: Events not detected
+   - Solution: Check text clarity and add relevant keywords
+
+5. **Rumor Analysis**
+   - Issue: Low confidence scores
+   - Solution: Adjust time window and pattern matching
+
+6. **Visualization**
+   - Issue: Timeline not displaying
+   - Solution: Check data format and time ranges
 
 ### Getting Help
 

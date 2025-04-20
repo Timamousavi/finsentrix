@@ -19,10 +19,27 @@ FinSentrix provides real-time sentiment analysis across multiple languages (incl
 
 - **Global Market Coverage**: Analyze sentiment across stocks, forex, and cryptocurrencies
 - **Multi-language Support**: Specialized financial terminology in English and Persian
+- **Event-Aware Analysis**: Detect market events and correlate with sentiment shifts
+- **Rumor Detection**: Identify and analyze potential market manipulation
 - **Real-time Analysis**: Process and analyze data as it arrives
 - **Advanced NLP**: State-of-the-art models for accurate sentiment detection
 - **Comprehensive API**: Easy integration with your existing systems
 - **Beautiful Dashboard**: Intuitive interface for market insights
+
+## 🧠 Advanced Features
+
+### Event-Aware Sentiment Analysis
+- Detect market events (earnings calls, central bank meetings, political news)
+- Auto-tag news with events using Named Entity Recognition
+- Timeline visualization: "Sentiment dipped before Fed meeting"
+- Correlate events with market movements
+
+### Rumor Detection Engine
+- Use clustering + NLP to detect unverified rumors
+- Track message spread across multiple sources
+- Calculate confidence scores for rumor verification
+- Alert system for potential market manipulation
+- Anti-fake-news radar for financial content
 
 ## 📊 Quick Start
 
@@ -54,14 +71,21 @@ pip install finsentrix
 ```
 
 ```python
-from finsentrix import SentimentAnalyzer
+from finsentrix import FinSentrix
 
 # Initialize the analyzer
-analyzer = SentimentAnalyzer()
+fsx = FinSentrix()
 
-# Analyze text
-result = analyzer.analyze("Bitcoin shows strong bullish momentum")
-print(result.sentiment)  # Output: positive
+# Analyze text with event detection
+result = fsx.analyze_with_events(
+    "Central Bank announced interest rate hike",
+    detect_events=True
+)
+
+# Detect rumors
+rumors = fsx.detect_rumors([
+    {"text": "Rumor about company X", "timestamp": "2024-02-20T10:00:00Z"}
+])
 ```
 
 ## 📈 Example Results
@@ -69,6 +93,8 @@ print(result.sentiment)  # Output: positive
 Check out our [examples directory](examples/) for sample visualizations and insights:
 
 - [Market Sentiment Trends](examples/market_trends.md)
+- [Event-Sentiment Correlation](examples/event_correlation.md)
+- [Rumor Analysis Dashboard](examples/rumor_analysis.md)
 - [Crypto Market Analysis](examples/crypto_analysis.md)
 - [Persian Market Insights](examples/persian_insights.md)
 
@@ -125,7 +151,12 @@ finsentrix/
 │   ├── api/                 # API implementation
 │   ├── data/                # Data collection
 │   ├── models/              # ML models
+│   │   ├── event_detector.py
+│   │   ├── rumor_detector.py
+│   │   └── sentiment_analyzer.py
 │   └── utils/               # Utilities
+│       ├── text_processor.py
+│       └── visualization.py
 ├── tests/                   # Test suite
 ├── docs/                    # Documentation
 ├── requirements.txt         # Dependencies

@@ -1,5 +1,18 @@
 # FinSentrix (FSX) Developer Guide
 
+## Table of Contents
+1. [Introduction](#introduction)
+2. [System Architecture](#system-architecture)
+3. [Development Setup](#development-setup)
+4. [Code Structure](#code-structure)
+5. [Development Workflow](#development-workflow)
+6. [Adding New Features](#adding-new-features)
+7. [Testing](#testing)
+8. [Documentation](#documentation)
+9. [Deployment](#deployment)
+10. [Contributing](#contributing)
+11. [Support](#support)
+
 ## Introduction
 
 This guide provides comprehensive information for developers working with the FinSentrix (FSX) codebase. It covers architecture, development workflow, and best practices.
