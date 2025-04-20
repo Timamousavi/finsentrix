@@ -55,7 +55,7 @@ This guide provides comprehensive information for developers working with the Fi
 
 1. **Clone Repository**
    ```bash
-   git clone https://github.com/your-org/finsentrix.git
+   git clone https://github.com/timamousavi/finsentrix.git
    cd finsentrix
    ```
 
@@ -288,3 +288,6 @@ For development support:
 - Documentation: https://docs.finsentrix.com
 - Issues: https://github.com/your-org/finsentrix/issues
 - Email: dev@finsentrix.com 
+
+node --version
+npm --version 
