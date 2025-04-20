@@ -22,8 +22,8 @@ wheels/
 
 # Virtual Environment
 venv/
-env/
 ENV/
+env/
 
 # IDE
 .idea/
@@ -35,37 +35,33 @@ ENV/
 *.log
 logs/
 
-# Data
-data/raw/
-data/processed/
-*.csv
-*.json
-*.pkl
-
-# Model files
-models/
-*.h5
-*.pth
-*.pt
-*.onnx
+# Database
+*.db
+*.sqlite3
 
 # Environment variables
 .env
 .env.local
 
-# Jupyter Notebook
-.ipynb_checkpoints
-*.ipynb
-
-# Testing
+# Test coverage
 .coverage
 htmlcov/
 .pytest_cache/
-.tox/
 
 # Distribution
-*.tar.gz
-*.zip
+dist/
+build/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Assets
+examples/assets/
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
 
 # OS specific
 .DS_Store
