@@ -1,27 +1,25 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+import { analyzeText } from '../../services/api';
 
 interface SentimentState {
+  text: string;
+  result: any;
   loading: boolean;
   error: string | null;
-  result: {
-    sentiment: string;
-    confidence: number;
-    keywords: string[];
-  } | null;
 }
 
 const initialState: SentimentState = {
+  text: '',
+  result: null,
   loading: false,
   error: null,
-  result: null,
 };
 
-export const analyzeText = createAsyncThunk(
-  'sentiment/analyzeText',
+export const analyzeSentiment = createAsyncThunk(
+  'sentiment/analyze',
   async (text: string) => {
-    const response = await axios.post('/api/analyze', { text });
-    return response.data;
+    const response = await analyzeText(text);
+    return response;
   }
 );
 
@@ -29,6 +27,9 @@ const sentimentSlice = createSlice({
   name: 'sentiment',
   initialState,
   reducers: {
+    setText: (state, action) => {
+      state.text = action.payload;
+    },
     clearResult: (state) => {
       state.result = null;
       state.error = null;
@@ -36,20 +37,20 @@ const sentimentSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(analyzeText.pending, (state) => {
+      .addCase(analyzeSentiment.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(analyzeText.fulfilled, (state, action) => {
+      .addCase(analyzeSentiment.fulfilled, (state, action) => {
         state.loading = false;
         state.result = action.payload;
       })
-      .addCase(analyzeText.rejected, (state, action) => {
+      .addCase(analyzeSentiment.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'An error occurred';
+        state.error = action.error.message || 'Failed to analyze sentiment';
       });
   },
 });
 
-export const { clearResult } = sentimentSlice.actions;
+export const { setText, clearResult } = sentimentSlice.actions;
 export default sentimentSlice.reducer; 

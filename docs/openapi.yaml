@@ -1,0 +1,249 @@
+openapi: 3.0.0
+info:
+  title: FinSentrix API
+  description: API for financial market sentiment analysis
+  version: 1.0.0
+  contact:
+    name: FinSentrix Team
+    email: support@finsentrix.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:8000
+    description: Development server
+  - url: https://api.finsentrix.com
+    description: Production server
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        detail:
+          type: string
+          description: Error message
+
+    SentimentAnalysis:
+      type: object
+      properties:
+        text:
+          type: string
+          description: Input text
+        sentiment:
+          type: string
+          enum: [positive, negative, neutral]
+          description: Sentiment classification
+        confidence:
+          type: number
+          format: float
+          description: Confidence score
+        market_type:
+          type: string
+          enum: [stock, forex, crypto]
+          description: Market type
+        language:
+          type: string
+          enum: [en, fa]
+          description: Language code
+
+    Event:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        type:
+          type: string
+          description: Event type
+        description:
+          type: string
+          description: Event description
+        confidence:
+          type: number
+          format: float
+        impact:
+          type: string
+          enum: [high, medium, low]
+        timestamp:
+          type: string
+          format: date-time
+
+    Rumor:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        text:
+          type: string
+          description: Rumor text
+        confidence:
+          type: number
+          format: float
+        source:
+          type: string
+          description: Source of the rumor
+        status:
+          type: string
+          enum: [unverified, verified, debunked]
+        impact:
+          type: string
+          enum: [high, medium, low]
+        timestamp:
+          type: string
+          format: date-time
+
+paths:
+  /analyze:
+    post:
+      summary: Analyze text sentiment
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                text:
+                  type: string
+                market_type:
+                  type: string
+                  enum: [stock, forex, crypto]
+                language:
+                  type: string
+                  enum: [en, fa]
+      responses:
+        '200':
+          description: Successful analysis
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SentimentAnalysis'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /events:
+    get:
+      summary: Get market events
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: market_type
+          in: query
+          schema:
+            type: string
+            enum: [stock, forex, crypto]
+        - name: start_date
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: end_date
+          in: query
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: List of events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Event'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /rumors:
+    get:
+      summary: Get market rumors
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: market_type
+          in: query
+          schema:
+            type: string
+            enum: [stock, forex, crypto]
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [unverified, verified, debunked]
+      responses:
+        '200':
+          description: List of rumors
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Rumor'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /model/info:
+    get:
+      summary: Get model information
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Model information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  version:
+                    type: string
+                  last_trained:
+                    type: string
+                    format: date-time
+                  performance:
+                    type: object
+                    properties:
+                      accuracy:
+                        type: number
+                        format: float
+                      precision:
+                        type: number
+                        format: float
+                      recall:
+                        type: number
+                        format: float
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error' 

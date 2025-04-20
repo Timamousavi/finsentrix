@@ -1,0 +1,67 @@
+app:
+  name: "FinSentrix"
+  version: "1.0.0"
+  environment: "development"
+  debug: true
+
+api:
+  host: "0.0.0.0"
+  port: 8000
+  workers: 4
+  reload: true
+  cors_origins:
+    - "http://localhost:3000"
+    - "http://localhost:8000"
+
+database:
+  url: "postgresql://postgres:postgres@localhost:5432/finsentrix"
+  pool_size: 5
+  max_overflow: 10
+  echo: false
+
+security:
+  jwt:
+    secret_key: "your-secret-key-here"
+    algorithm: "HS256"
+    access_token_expire_minutes: 30
+  rate_limit:
+    requests: 100
+    period: 60
+
+model:
+  path: "models/sentiment_model"
+  version: "1.0.0"
+  batch_size: 32
+  confidence_threshold: 0.7
+
+logging:
+  level: "INFO"
+  file: "logs/app.log"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  max_size: 10485760  # 10MB
+  backup_count: 5
+
+monitoring:
+  prometheus:
+    enabled: true
+    port: 9090
+  metrics:
+    enabled: true
+    interval: 60
+
+frontend:
+  api_base_url: "http://localhost:8000"
+  environment: "development"
+  build_path: "frontend/build"
+
+events:
+  detection:
+    enabled: true
+    confidence_threshold: 0.7
+    max_events_per_text: 5
+
+rumors:
+  detection:
+    enabled: true
+    confidence_threshold: 0.8
+    pattern_matches_threshold: 3 

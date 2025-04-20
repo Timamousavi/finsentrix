@@ -21,7 +21,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Create necessary directories
-RUN mkdir -p data/raw data/processed logs
+RUN mkdir -p /app/data/raw /app/data/processed /app/logs
 
 # Set environment variables
 ENV PYTHONPATH=/app
