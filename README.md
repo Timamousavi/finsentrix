@@ -1,167 +1,203 @@
-# 📈 Iranian Stock Market Sentiment Analysis
+# FinSentrix (FSX)
 
 <div align="center">
-
-[![Python Version](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/downloads/)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![Documentation Status](https://readthedocs.org/projects/iranian-stock-sentiment/badge/?version=latest)](https://iranian-stock-sentiment.readthedocs.io/en/latest/?badge=latest)
-
+  <img src="docs/images/logo.png" alt="FinSentrix Logo" width="200"/>
+  
+  [![License](https://img.shields.io/badge/license-Dual-blue.svg)](LICENSE)
+  [![Python](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://www.python.org/downloads/)
+  [![Documentation](https://img.shields.io/badge/docs-passing-green.svg)](docs/)
+  [![Tests](https://img.shields.io/badge/tests-passing-green.svg)](tests/)
 </div>
 
-## 🌟 Overview
+## 🌐 Overview
 
-This project aims to revolutionize investment decision-making in the Iranian stock market by leveraging advanced natural language processing and machine learning techniques. By analyzing Persian-language content from various financial sources, we provide data-driven insights to help investors make more informed decisions.
+FinSentrix (FSX) is a sophisticated sentiment analysis system designed for global financial markets. It provides real-time sentiment analysis across multiple languages (including English and Persian) and various financial markets worldwide.
 
-<div align="center">
-  <img src="docs/images/sentiment-analysis.png" alt="Sentiment Analysis Flow" width="600"/>
-</div>
+### Key Features
 
-## 🚀 Features
+- **Global Market Coverage**: Analyze sentiment across international markets
+- **Multi-Language Support**: Including English and Persian with specialized financial terminology
+- **Market-Specific Analysis**: Stocks, forex, and cryptocurrency markets worldwide
+- **Real-Time Processing**: Continuous sentiment analysis with scheduled updates
+- **Advanced NLP**: Specialized financial term processing and sentiment detection
+- **RESTful API**: Easy integration with existing systems
+- **Comprehensive Documentation**: Detailed guides for users and developers
 
-- **Advanced Text Processing**
-  - Persian text normalization and tokenization
-  - Financial term extraction
-  - Sentiment analysis
-  - Custom stopword handling
+## 🚀 Getting Started
 
-- **Multiple Data Sources**
-  - Financial forums
-  - Telegram channels
-  - News articles
-  - Social media
+### Prerequisites
 
-- **Machine Learning Models**
-  - Logistic Regression
-  - Support Vector Machines
-  - Random Forest
-  - Deep Learning (optional)
-
-- **RESTful API**
-  - Real-time sentiment analysis
-  - Batch processing
-  - Detailed analysis reports
-
-## 📋 Prerequisites
-
-- Python 3.8 or higher
+- Python 3.9 or higher
+- pip (Python package manager)
 - Git
-- Virtual environment (recommended)
 
-## 🛠️ Installation
+### Installation
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/yourusername/iranian-stock-sentiment-analysis.git
-   cd iranian-stock-sentiment-analysis
-   ```
-
-2. **Create and activate virtual environment**
-   ```bash
-   # Windows
-   python -m venv venv
-   .\venv\Scripts\activate
-
-   # Linux/Mac
-   python3 -m venv venv
-   source venv/bin/activate
-   ```
-
-3. **Install dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-## 📁 Project Structure
-
-```
-iranian-stock-sentiment-analysis/
-├── data/               # Data storage
-│   ├── raw/           # Raw scraped data
-│   └── processed/     # Processed and cleaned data
-├── docs/              # Documentation
-│   ├── api/          # API documentation
-│   └── reports/      # Analysis reports
-├── notebooks/         # Jupyter notebooks for analysis
-├── src/              # Source code
-│   ├── data/        # Data collection and processing
-│   ├── models/      # Machine learning models
-│   ├── utils/       # Utility functions
-│   └── api/         # API endpoints
-└── tests/            # Unit tests
+1. Clone the repository:
+```bash
+git clone https://github.com/yourusername/finsentrix.git
+cd finsentrix
 ```
 
-## 🧪 Usage
-
-### Data Collection
-```python
-from src.data.scraper import FinancialContentScraper
-
-scraper = FinancialContentScraper("https://example-forum.com")
-posts = scraper.scrape_forum(page_count=2)
+2. Install dependencies:
+```bash
+pip install -r requirements.txt
 ```
 
-### Text Processing
-```python
-from src.utils.text_processor import PersianTextProcessor
-
-processor = PersianTextProcessor()
-processed = processor.process_text("سهام شرکت فولاد امروز با افزایش قیمت مواجه شد")
+3. Set up environment variables:
+```bash
+cp .env.example .env
+# Edit .env with your configuration
 ```
 
-### Sentiment Analysis
+4. Initialize the database:
+```bash
+python src/scripts/init_db.py
+```
+
+## 📊 Usage
+
+### Basic Usage
+
 ```python
 from src.models.sentiment_analyzer import SentimentAnalyzer
 
+# Initialize analyzer
 analyzer = SentimentAnalyzer()
-results = analyzer.train(texts, labels)
-prediction = analyzer.predict("سهام شرکت فولاد امروز با افزایش قیمت مواجه شد")
+
+# Analyze text in English
+result = analyzer.analyze(
+    text="NASDAQ showing positive trends",
+    language="en",
+    market_type="stock"
+)
+
+# Analyze text in Persian
+result = analyzer.analyze(
+    text="بازار جهانی امروز روند مثبتی دارد",
+    language="fa",
+    market_type="stock"
+)
+
+print(result)
 ```
 
 ### API Usage
-```bash
-# Start the API server
-uvicorn src.api.app:app --reload
 
-# Make a request
-curl -X POST "http://localhost:8000/analyze" \
-     -H "Content-Type: application/json" \
-     -d '{"text": "سهام شرکت فولاد امروز با افزایش قیمت مواجه شد"}'
+```python
+import requests
+
+# Analyze global market sentiment
+response = requests.post(
+    "http://localhost:8000/analyze",
+    json={
+        "text": "Global markets showing mixed signals",
+        "language": "en",
+        "market_type": "stock"
+    },
+    headers={"Authorization": "Bearer your_token"}
+)
+print(response.json())
 ```
 
-## 📊 Results
+## 📚 Documentation
 
-<div align="center">
-  <img src="docs/images/results.png" alt="Analysis Results" width="800"/>
-</div>
+- [API Documentation](docs/api/README.md)
+- [User Guide](docs/user/README.md)
+- [Developer Guide](docs/developer/README.md)
+- [Deployment Guide](docs/DEPLOYMENT.md)
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see our [Contributing Guidelines](docs/CONTRIBUTING.md) for details.
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+
+## 📄 License
+
+This project is licensed under a dual-license agreement:
+- **Academic License**: Free for non-commercial, academic use
+- **Commercial License**: Requires a separate license agreement for commercial use
+
+For commercial licensing inquiries, please contact:
+- Email: licensing@finsentrix.com
+- Website: https://finsentrix.com/licensing
+
+See [LICENSE](LICENSE) for full terms and conditions.
+
+## 📞 Support
+
+For support, please open an issue in the GitHub repository or contact us at support@finsentrix.com.
+
+## 🌟 Acknowledgments
+
+- [Hazm](https://github.com/roshan-research/hazm) for Persian NLP
+- [Transformers](https://huggingface.co/transformers/) for sentiment analysis
+- [FastAPI](https://fastapi.tiangolo.com/) for the API framework
+
+## Project Structure
+
+```
+finsentrix/
+├── data/
+│   ├── raw/                  # Raw collected data
+│   ├── processed/            # Processed data
+│   └── README.md            # Data documentation
+├── src/
+│   ├── api/                 # API implementation
+│   ├── data/                # Data collection
+│   ├── models/              # ML models
+│   └── utils/               # Utilities
+├── tests/                   # Test suite
+├── docs/                    # Documentation
+├── requirements.txt         # Dependencies
+└── README.md               # Project documentation
+```
+
+## Documentation
+
+- [API Documentation](docs/API.md)
+- [User Guide](docs/USER_GUIDE.md)
+- [Developer Guide](docs/DEVELOPER_GUIDE.md)
+- [Data Documentation](data/README.md)
+
+## License
+
+This project is licensed under a dual-license agreement:
+- **Academic License**: Free for non-commercial, academic use
+- **Commercial License**: Requires a separate license agreement for commercial use
+
+For commercial licensing inquiries, please contact:
+- Email: licensing@finsentrix.com
+- Website: https://finsentrix.com/licensing
+
+See [LICENSE](LICENSE) for full terms and conditions.
+
+## Contributing
 
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## 📝 License
+## Support
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+For support, please contact:
+- Email: fatemehmousavy@ut.ac.ir
+- Documentation: https://docs.finsentrix.com
+- Community: https://community.finsentrix.com
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - [Hazm](https://github.com/sobhe/hazm) - Persian text processing library
-- [Scikit-learn](https://scikit-learn.org/) - Machine learning library
+- [Transformers](https://huggingface.co/transformers/) - State-of-the-art NLP models
 - [FastAPI](https://fastapi.tiangolo.com/) - Modern web framework
-- All contributors and maintainers
 
 ## 📞 Contact
 
-For questions or suggestions, please open an issue or contact us at [your-email@example.com](mailto:your-email@example.com).
+For questions or suggestions, please open an issue or contact us at [fatemehmousavy@ut.ac.ir](mailto:fatemehmousavy@ut.ac.ir).
 
 ---
 
 <div align="center">
-  <sub>Built with ❤️ by [Your Name]</sub>
+  <sub>Built with ❤️ by Tima Mousavi</sub>
 </div> 
