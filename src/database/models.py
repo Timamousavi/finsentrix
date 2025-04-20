@@ -43,7 +43,7 @@ class Event(Base):
     description = Column(Text)
     confidence = Column(Float)
     impact = Column(String(20))  # 'high', 'medium', 'low'
-    metadata = Column(JSON)  # Additional event data
+    event_data = Column(JSON)  # Additional event data
     created_at = Column(DateTime, default=datetime.utcnow)
     analysis_id = Column(Integer, ForeignKey("analyses.id"))
 
@@ -58,7 +58,7 @@ class Rumor(Base):
     confidence = Column(Float)
     verdict = Column(String(20))  # 'verified', 'unverified', 'debunked'
     sources = Column(JSON)  # List of source texts
-    metadata = Column(JSON)  # Additional rumor data
+    rumor_data = Column(JSON)  # Additional rumor data
     created_at = Column(DateTime, default=datetime.utcnow)
     analysis_id = Column(Integer, ForeignKey("analyses.id"))
 
@@ -74,7 +74,7 @@ class MarketData(Base):
     volume = Column(Float)
     timestamp = Column(DateTime, default=datetime.utcnow)
     sentiment_impact = Column(Float)  # Correlation between sentiment and price movement
-    metadata = Column(JSON)  # Additional market data
+    market_data = Column(JSON)  # Additional market data
 
 class Log(Base):
     __tablename__ = "logs"
@@ -84,6 +84,6 @@ class Log(Base):
     message = Column(Text)
     created_at = Column(DateTime, default=datetime.utcnow)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
-    metadata = Column(JSON)  # Additional log data
+    log_data = Column(JSON)  # Additional log data
     
     user = relationship("User") 

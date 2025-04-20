@@ -5,8 +5,8 @@ from sqlalchemy import inspect
 from passlib.context import CryptContext
 import hashlib
 
-from .models import User, Analysis, Event, Rumor, MarketData
-from .database import Base, engine
+from src.database.models import User, Analysis, Event, Rumor, MarketData
+from src.database.database import engine, Base
 
 def hash_password(password: str) -> str:
     """Hash password using SHA256."""
@@ -29,6 +29,39 @@ def clear_database(db: Session):
     if "users" in existing_tables:
         db.query(User).delete()
     db.commit()
+
+def seed_database():
+    # Create tables
+    Base.metadata.create_all(bind=engine)
+    
+    # Create a session
+    db = Session(engine)
+    
+    try:
+        # Check if test user exists
+        test_user = db.query(User).filter(User.username == "testuser").first()
+        if not test_user:
+            # Create test user
+            test_user = User(
+                username="testuser",
+                email="test@example.com",
+                hashed_password="testpass",  # In production, use proper password hashing
+                is_active=True,
+                is_admin=False
+            )
+            db.add(test_user)
+            db.commit()
+            print("Test user created successfully")
+        else:
+            print("Test user already exists")
+    except Exception as e:
+        print(f"Error seeding database: {e}")
+        db.rollback()
+    finally:
+        db.close()
+
+if __name__ == "__main__":
+    seed_database()
 
 def seed_database(db: Session):
     """Seed the database with initial data."""
