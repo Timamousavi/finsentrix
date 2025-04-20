@@ -24,6 +24,13 @@ from ..models.event_detector import EventDetector, RumorDetector
 from ..utils.visualization import create_timeline_visualization, create_rumor_analysis_visualization
 import pandas as pd
 import numpy as np
+from ..core.sentiment_analyzer import SentimentAnalyzer as CoreSentimentAnalyzer
+from ..core.event_detector import EventDetector as CoreEventDetector
+from ..core.rumor_analyzer import RumorAnalyzer as CoreRumorAnalyzer
+from ..core.market_processor import MarketProcessor as CoreMarketProcessor
+from ..database.database import SessionLocal, get_db
+from ..database.models import Analysis, Event, Rumor, MarketData
+from sqlalchemy.orm import Session
 
 # Load environment variables
 load_dotenv()
@@ -480,6 +487,153 @@ async def startup():
 @RateLimiter(times=60, minutes=1)
 async def health_check():
     return {"status": "healthy"}
+
+# Initialize core components
+sentiment_analyzer = SentimentAnalyzer()
+event_detector = EventDetector()
+rumor_analyzer = RumorAnalyzer()
+
+# Pydantic models
+class TextAnalysisRequest(BaseModel):
+    text: str
+    language: Optional[str] = "en"
+
+class BatchAnalysisRequest(BaseModel):
+    texts: List[str]
+    language: Optional[str] = "en"
+
+class MarketDataRequest(BaseModel):
+    ticker: str
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+
+# Sentiment Analysis Endpoints
+@app.post("/api/sentiment/analyze")
+async def analyze_sentiment(request: TextAnalysisRequest, db: Session = Depends(get_db)):
+    try:
+        # Analyze sentiment
+        sentiment = sentiment_analyzer.analyze_text(request.text, request.language)
+        
+        # Save to database
+        analysis = Analysis(
+            text=request.text,
+            sentiment_scores=sentiment,
+            language=request.language,
+            timestamp=datetime.now()
+        )
+        db.add(analysis)
+        db.commit()
+        
+        return {"sentiment": sentiment}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/sentiment/batch")
+async def analyze_batch(request: BatchAnalysisRequest, db: Session = Depends(get_db)):
+    try:
+        sentiments = sentiment_analyzer.analyze_batch(request.texts, request.language)
+        
+        # Save to database
+        analyses = [
+            Analysis(
+                text=text,
+                sentiment_scores=sentiment,
+                language=request.language,
+                timestamp=datetime.now()
+            )
+            for text, sentiment in zip(request.texts, sentiments)
+        ]
+        db.bulk_save_objects(analyses)
+        db.commit()
+        
+        return {"sentiments": sentiments}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Event Detection Endpoints
+@app.post("/api/events/detect")
+async def detect_events(request: TextAnalysisRequest, db: Session = Depends(get_db)):
+    try:
+        events = event_detector.detect_events(request.text)
+        
+        # Save to database
+        db_events = [
+            Event(
+                text=event["text"],
+                event_type=event["type"],
+                confidence=event["confidence"],
+                timestamp=datetime.fromisoformat(event["timestamp"])
+            )
+            for event in events
+        ]
+        db.bulk_save_objects(db_events)
+        db.commit()
+        
+        return {"events": events}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/events/timeline")
+async def get_event_timeline(request: BatchAnalysisRequest):
+    try:
+        timeline = event_detector.get_event_timeline(request.texts)
+        return {"timeline": timeline}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Rumor Analysis Endpoints
+@app.post("/api/rumors/detect")
+async def detect_rumors(request: BatchAnalysisRequest, db: Session = Depends(get_db)):
+    try:
+        timestamps = [datetime.now()] * len(request.texts)
+        rumors = rumor_analyzer.detect_rumors(request.texts, timestamps)
+        
+        # Save to database
+        db_rumors = [
+            Rumor(
+                texts=rumor["texts"],
+                spread_rate=rumor["spread_rate"],
+                confidence=rumor["confidence"],
+                key_phrases=rumor["key_phrases"],
+                timestamp=datetime.now()
+            )
+            for rumor in rumors
+        ]
+        db.bulk_save_objects(db_rumors)
+        db.commit()
+        
+        return {"rumors": rumors}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Market Data Endpoints
+@app.post("/api/market/data")
+async def get_market_data(request: MarketDataRequest, db: Session = Depends(get_db)):
+    try:
+        processor = MarketProcessor(request.ticker, request.start_date, request.end_date)
+        market_data = processor.get_market_summary()
+        
+        # Save to database
+        db_market_data = MarketData(
+            ticker=request.ticker,
+            data=market_data,
+            timestamp=datetime.now()
+        )
+        db.add(db_market_data)
+        db.commit()
+        
+        return market_data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/market/indicators/{ticker}")
+async def get_technical_indicators(ticker: str):
+    try:
+        processor = MarketProcessor(ticker)
+        indicators = processor.calculate_technical_indicators()
+        return indicators
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
     import uvicorn

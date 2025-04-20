@@ -1,0 +1,11 @@
+{
+  "devDependencies": {
+    "@types/antd": "^0.12.32",
+    "@types/axios": "^0.9.36",
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2"
+  },
+  "dependencies": {
+    "@ant-design/charts": "^2.2.7"
+  }
+}
