@@ -1,12 +1,17 @@
 from fastapi import FastAPI, HTTPException, Depends, Request
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.openapi.utils import get_openapi
+from fastapi_limiter import FastAPILimiter
+from fastapi_limiter.depends import RateLimiter
 from pydantic import BaseModel, Field
 from typing import List, Optional
 import jwt
+import os
 from datetime import datetime, timedelta
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
@@ -14,6 +19,10 @@ from slowapi.errors import RateLimitExceeded
 import logging
 from ..models.sentiment_analyzer import SentimentAnalyzer
 from ..utils.text_processor import FinancialTextProcessor
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Configure logging
 logging.basicConfig(
@@ -33,14 +42,35 @@ app = FastAPI(
     openapi_url="/openapi.json"
 )
 
-# Add CORS middleware
+# Security middleware
+app.add_middleware(
+    TrustedHostMiddleware,
+    allowed_hosts=["*"]  # In production, replace with specific domains
+)
+
+# CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # In production, replace with specific origins
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Compression middleware
+app.add_middleware(GZipMiddleware, minimum_size=1000)
+
+# Security headers middleware
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    response.headers["Content-Security-Policy"] = "default-src 'self'"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    return response
 
 # Rate limiting
 limiter = Limiter(key_func=get_remote_address)
@@ -161,6 +191,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
 
 # Routes
 @app.post("/token", response_model=Token)
+@RateLimiter(times=5, minutes=1)
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
     user = authenticate_user(form_data.username, form_data.password)
     if not user:
@@ -181,7 +212,7 @@ async def root():
     return {"message": "FinSentrix (FSX) Global Market Sentiment Analysis API"}
 
 @app.post("/analyze", response_model=SentimentResponse)
-@limiter.limit("10/minute")
+@RateLimiter(times=10, minutes=1)
 async def analyze_sentiment(
     request: Request,
     sentiment_request: SentimentRequest,
@@ -216,7 +247,7 @@ async def analyze_sentiment(
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/analyze/batch", response_model=BatchSentimentResponse)
-@limiter.limit("5/minute")
+@RateLimiter(times=5, minutes=1)
 async def analyze_batch_sentiment(
     request: Request,
     batch_request: BatchSentimentRequest,
@@ -307,6 +338,18 @@ async def custom_swagger_ui_html():
         swagger_js_url="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-bundle.js",
         swagger_css_url="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui.css",
     )
+
+# Rate limiting setup
+@app.on_event("startup")
+async def startup():
+    redis_client = redis.from_url("redis://localhost:6379", encoding="utf-8", decode_responses=True)
+    await FastAPILimiter.init(redis_client)
+
+# Health check endpoint
+@app.get("/health")
+@RateLimiter(times=60, minutes=1)
+async def health_check():
+    return {"status": "healthy"}
 
 if __name__ == "__main__":
     import uvicorn
