@@ -92,11 +92,23 @@ rumors = fsx.detect_rumors([
 
 Check out our [examples directory](examples/) for sample visualizations and insights:
 
-- [Market Sentiment Trends](examples/market_trends.md)
-- [Event-Sentiment Correlation](examples/event_correlation.md)
-- [Rumor Analysis Dashboard](examples/rumor_analysis.md)
-- [Crypto Market Analysis](examples/crypto_analysis.md)
-- [Persian Market Insights](examples/persian_insights.md)
+- [Market Sentiment Trends](examples/market_trends.md) - Analyze and visualize market sentiment trends across different market types and time periods
+- [Event-Sentiment Correlation](examples/event_correlation.md) - Study the correlation between market events and sentiment changes
+- [Rumor Analysis Dashboard](examples/rumor_analysis.md) - Create comprehensive dashboards for analyzing market rumors and their impact
+- [Crypto Market Analysis](examples/crypto_analysis.md) - Specialized analysis techniques for cryptocurrency markets
+- [Persian Market Insights](examples/persian_insights.md) - Analysis techniques for Persian financial markets with native language support
+
+Each example includes:
+- Detailed code snippets
+- Visualization examples
+- Key insights and patterns
+- Best practices
+- Implementation tips
+- Next steps for further analysis
+
+## 🎨 Example Assets
+
+The project includes an `examples/assets/` directory containing visualization examples. These assets are not tracked in Git to keep the repository size manageable. When running the examples, new visualizations will be generated in this directory.
 
 ## 🛠️ Development
 
