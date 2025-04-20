@@ -1,111 +1,99 @@
-# FinSentrix (FSX)
+# FinSentrix (FSX) - Global Financial Market Sentiment Analysis
 
 <div align="center">
-  <img src="docs/images/logo.png" alt="FinSentrix Logo" width="200"/>
+  <img src="docs/assets/banner.png" alt="FinSentrix Banner" width="800"/>
   
-  [![License](https://img.shields.io/badge/license-Dual-blue.svg)](LICENSE)
-  [![Python](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://www.python.org/downloads/)
-  [![Documentation](https://img.shields.io/badge/docs-passing-green.svg)](docs/)
-  [![Tests](https://img.shields.io/badge/tests-passing-green.svg)](tests/)
+  [![Python Version](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://www.python.org/downloads/)
+  [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+  [![Build Status](https://img.shields.io/github/actions/workflow/status/Timamousavi/finsentrix/ci.yml)](https://github.com/Timamousavi/finsentrix/actions)
+  [![Code Coverage](https://img.shields.io/codecov/c/github/Timamousavi/finsentrix)](https://codecov.io/gh/Timamousavi/finsentrix)
+  [![Stars](https://img.shields.io/github/stars/Timamousavi/finsentrix?style=social)](https://github.com/Timamousavi/finsentrix/stargazers)
+  [![Docker Pulls](https://img.shields.io/docker/pulls/timamousavi/finsentrix)](https://hub.docker.com/r/timamousavi/finsentrix)
 </div>
 
-## 🌐 Overview
+## 🌟 Overview
 
-FinSentrix (FSX) is a sophisticated sentiment analysis system designed for global financial markets. It provides real-time sentiment analysis across multiple languages (including English and Persian) and various financial markets worldwide.
+FinSentrix provides real-time sentiment analysis across multiple languages (including English and Persian) and various financial markets worldwide. Our advanced NLP models analyze news articles, social media, and market data to deliver actionable insights.
 
-### Key Features
+## 🚀 Key Features
 
-- **Global Market Coverage**: Analyze sentiment across international markets
-- **Multi-Language Support**: Including English and Persian with specialized financial terminology
-- **Market-Specific Analysis**: Stocks, forex, and cryptocurrency markets worldwide
-- **Real-Time Processing**: Continuous sentiment analysis with scheduled updates
-- **Advanced NLP**: Specialized financial term processing and sentiment detection
-- **RESTful API**: Easy integration with existing systems
-- **Comprehensive Documentation**: Detailed guides for users and developers
+- **Global Market Coverage**: Analyze sentiment across stocks, forex, and cryptocurrencies
+- **Multi-language Support**: Specialized financial terminology in English and Persian
+- **Real-time Analysis**: Process and analyze data as it arrives
+- **Advanced NLP**: State-of-the-art models for accurate sentiment detection
+- **Comprehensive API**: Easy integration with your existing systems
+- **Beautiful Dashboard**: Intuitive interface for market insights
 
-## 🚀 Getting Started
+## 📊 Quick Start
 
-### Prerequisites
+### Using Docker (Recommended)
 
-- Python 3.9 or higher
-- pip (Python package manager)
-- Git
-
-### Installation
-
-1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/finsentrix.git
+docker pull timamousavi/finsentrix
+docker run -p 8000:8000 timamousavi/finsentrix
+```
+
+### Local Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/Timamousavi/finsentrix.git
 cd finsentrix
-```
 
-2. Install dependencies:
-```bash
+# Install dependencies
 pip install -r requirements.txt
+
+# Start the API server
+uvicorn src.api.main:app --host 0.0.0.0 --port 8000
 ```
 
-3. Set up environment variables:
+### Python Package
+
 ```bash
-cp .env.example .env
-# Edit .env with your configuration
+pip install finsentrix
 ```
-
-4. Initialize the database:
-```bash
-python src/scripts/init_db.py
-```
-
-## 📊 Usage
-
-### Basic Usage
 
 ```python
-from src.models.sentiment_analyzer import SentimentAnalyzer
+from finsentrix import SentimentAnalyzer
 
-# Initialize analyzer
+# Initialize the analyzer
 analyzer = SentimentAnalyzer()
 
-# Analyze text in English
-result = analyzer.analyze(
-    text="NASDAQ showing positive trends",
-    language="en",
-    market_type="stock"
-)
-
-# Analyze text in Persian
-result = analyzer.analyze(
-    text="بازار جهانی امروز روند مثبتی دارد",
-    language="fa",
-    market_type="stock"
-)
-
-print(result)
+# Analyze text
+result = analyzer.analyze("Bitcoin shows strong bullish momentum")
+print(result.sentiment)  # Output: positive
 ```
 
-### API Usage
+## 📈 Example Results
 
-```python
-import requests
+Check out our [examples directory](examples/) for sample visualizations and insights:
 
-# Analyze global market sentiment
-response = requests.post(
-    "http://localhost:8000/analyze",
-    json={
-        "text": "Global markets showing mixed signals",
-        "language": "en",
-        "market_type": "stock"
-    },
-    headers={"Authorization": "Bearer your_token"}
-)
-print(response.json())
+- [Market Sentiment Trends](examples/market_trends.md)
+- [Crypto Market Analysis](examples/crypto_analysis.md)
+- [Persian Market Insights](examples/persian_insights.md)
+
+## 🛠️ Development
+
+```bash
+# Set up development environment
+python -m venv venv
+source venv/bin/activate  # or `venv\Scripts\activate` on Windows
+pip install -r requirements-dev.txt
+
+# Run tests
+pytest
+
+# Run linting
+flake8
+black .
 ```
 
 ## 📚 Documentation
 
-- [API Documentation](docs/api/README.md)
-- [User Guide](docs/user/README.md)
-- [Developer Guide](docs/developer/README.md)
-- [Deployment Guide](docs/DEPLOYMENT.md)
+- [API Documentation](docs/API.md)
+- [User Guide](docs/USER_GUIDE.md)
+- [Developer Guide](docs/DEVELOPER_GUIDE.md)
+- [Model Architecture](docs/ARCHITECTURE.md)
 
 ## 🤝 Contributing
 
@@ -113,25 +101,17 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 
 ## 📄 License
 
-This project is licensed under a dual-license agreement:
-- **Academic License**: Free for non-commercial, academic use
-- **Commercial License**: Requires a separate license agreement for commercial use
-
-For commercial licensing inquiries, please contact:
-- Email: licensing@finsentrix.com
-- Website: https://finsentrix.com/licensing
-
-See [LICENSE](LICENSE) for full terms and conditions.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 📞 Support
 
-For support, please open an issue in the GitHub repository or contact us at support@finsentrix.com.
+For support, email support@finsentrix.com or join our [Discord community](https://discord.gg/finsentrix).
 
-## 🌟 Acknowledgments
+## 🙏 Acknowledgments
 
-- [Hazm](https://github.com/roshan-research/hazm) for Persian NLP
-- [Transformers](https://huggingface.co/transformers/) for sentiment analysis
-- [FastAPI](https://fastapi.tiangolo.com/) for the API framework
+- State-of-the-art NLP models from Hugging Face
+- Modern web frameworks (FastAPI, React)
+- Open-source financial data providers
 
 ## Project Structure
 
