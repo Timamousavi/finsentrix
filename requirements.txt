@@ -69,4 +69,19 @@ hooshvare-bert-fa-base-ner>=0.1.0
 
 # Additional utilities
 python-dateutil>=2.8.2
-regex>=2021.8.3 
+regex>=2021.8.3
+
+# GUI dependencies
+PyQt6>=6.4.0
+PyQt6-Qt6>=6.4.0
+PyQt6-sip>=13.4.0
+
+# Packaging dependencies
+pyinstaller>=5.6.2
+inno-setup>=6.0.0
+
+# Development dependencies
+pytest>=7.0.0
+black>=22.3.0
+flake8>=4.0.0
+mypy>=0.950 

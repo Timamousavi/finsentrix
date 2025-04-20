@@ -1,44 +1,42 @@
 from setuptools import setup, find_packages
 
-with open("README.md", "r", encoding="utf-8") as fh:
-    long_description = fh.read()
-
-with open("requirements.txt", "r", encoding="utf-8") as fh:
-    requirements = fh.read().splitlines()
-
 setup(
     name="finsentrix",
-    version="0.1.0",
-    author="Tim Amousavi",
-    author_email="tim@finsentrix.com",
+    version="1.0.0",
+    packages=find_packages(),
+    include_package_data=True,
+    install_requires=[
+        "fastapi>=0.68.0",
+        "uvicorn>=0.15.0",
+        "python-jose>=3.3.0",
+        "passlib>=1.7.4",
+        "python-multipart>=0.0.5",
+        "hazm>=0.7.0",
+        "transformers>=4.11.0",
+        "torch>=1.9.0",
+        "pandas>=1.3.0",
+        "numpy>=1.21.0",
+        "scikit-learn>=0.24.2",
+        "plotly>=5.3.0",
+        "python-dotenv>=0.19.0",
+    ],
+    entry_points={
+        "console_scripts": [
+            "finsentrix=finsentrix.cli:main",
+        ],
+    },
+    author="Tima Mousavi",
+    author_email="fatemehmousavy@ut.ac.ir",
     description="Global Financial Market Sentiment Analysis",
-    long_description=long_description,
+    long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     url="https://github.com/Timamousavi/finsentrix",
-    packages=find_packages(),
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Financial and Insurance Industry",
         "License :: OSI Approved :: MIT License",
-        "Operating System :: OS Independent",
-        "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.9",
-        "Topic :: Scientific/Engineering :: Artificial Intelligence",
-        "Topic :: Software Development :: Libraries :: Python Modules",
+        "Operating System :: OS Independent",
     ],
     python_requires=">=3.9",
-    install_requires=requirements,
-    entry_points={
-        "console_scripts": [
-            "finsentrix=src.cli:main",
-        ],
-    },
-    include_package_data=True,
-    package_data={
-        "finsentrix": [
-            "data/*",
-            "models/*",
-            "config/*",
-        ],
-    },
 ) 
