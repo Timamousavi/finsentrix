@@ -9,6 +9,36 @@ const api = axios.create({
   },
 });
 
+// Add request interceptor for error handling
+api.interceptors.request.use(
+  (config) => {
+    // Add any auth token here if needed
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Add response interceptor for error handling
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      console.error('API Error:', error.response.data);
+    } else if (error.request) {
+      // The request was made but no response was received
+      console.error('No response received:', error.request);
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      console.error('Error setting up request:', error.message);
+    }
+    return Promise.reject(error);
+  }
+);
+
 export interface Rumor {
   id: string;
   text: string;
@@ -27,12 +57,33 @@ export const detectRumors = async (text: string): Promise<Rumor[]> => {
   }
 };
 
-export const analyzeSentiment = async (text: string): Promise<any> => {
+export interface SentimentResult {
+  text: string;
+  sentiment: string;
+  confidence: number;
+  details: Record<string, number>;
+}
+
+export interface BatchSentimentResult {
+  results: SentimentResult[];
+}
+
+export const analyzeSentiment = async (text: string, apiKey?: string): Promise<SentimentResult> => {
   try {
-    const response = await api.post('/analyze', { text });
+    const response = await api.post('/analyze', { text, api_key: apiKey });
     return response.data;
   } catch (error) {
     console.error('Error analyzing sentiment:', error);
+    throw error;
+  }
+};
+
+export const analyzeBatchSentiment = async (texts: string[], apiKey?: string): Promise<BatchSentimentResult> => {
+  try {
+    const response = await api.post('/analyze/batch', { texts, api_key: apiKey });
+    return response.data;
+  } catch (error) {
+    console.error('Error analyzing batch sentiment:', error);
     throw error;
   }
 };
@@ -44,5 +95,25 @@ export const getModelInfo = async (): Promise<any> => {
   } catch (error) {
     console.error('Error getting model info:', error);
     throw error;
+  }
+};
+
+export const getApiInfo = async (): Promise<any> => {
+  try {
+    const response = await api.get('/');
+    return response.data;
+  } catch (error) {
+    console.error('Error getting API info:', error);
+    throw error;
+  }
+};
+
+export const checkHealth = async (): Promise<boolean> => {
+  try {
+    const response = await api.get('/health');
+    return response.data.status === 'healthy';
+  } catch (error) {
+    console.error('Health check failed:', error);
+    return false;
   }
 }; 
