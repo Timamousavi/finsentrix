@@ -1,24 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Form, Input, Switch, Button, Typography, message, Select } from 'antd';
-import axios from 'axios';
+import { Form, Input, Switch, Button, message, InputNumber, Select } from 'antd';
+import Card from 'antd/es/card';
+import Typography from 'antd/es/typography';
 import { useLanguage } from '../contexts/LanguageContext';
+import axios from 'axios';
 
 const { Title } = Typography;
-const { Option } = Select;
+const { Password } = Input;
 
 interface Settings {
   apiKey: string;
   enableNotifications: boolean;
   sentimentThreshold: number;
   eventConfidenceThreshold: number;
-  rumorSpreadThreshold: number;
-  dataRetentionDays: number;
+  language: 'en' | 'fa';
 }
 
-const Settings: React.FC = () => {
-  const [form] = Form.useForm();
-  const [loading, setLoading] = useState(false);
+const SettingsComponent: React.FC = () => {
+  const [form] = Form.useForm<Settings>();
   const { language, setLanguage, t } = useLanguage();
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     fetchSettings();
@@ -54,36 +55,40 @@ const Settings: React.FC = () => {
   return (
     <div style={{ direction: language === 'fa' ? 'rtl' : 'ltr' }}>
       <Card>
-        <Title level={4}>{t('settings', 'title')}</Title>
-        <Form
+        <Title level={2}>{t('settings', 'title')}</Title>
+        <Form<Settings>
           form={form}
           layout="vertical"
-          onFinish={handleSave}
           initialValues={{
             enableNotifications: true,
             sentimentThreshold: 0.5,
             eventConfidenceThreshold: 0.7,
-            rumorSpreadThreshold: 0.6,
-            dataRetentionDays: 30,
+            language: language,
           }}
+          onFinish={handleSave}
         >
           <Form.Item
             label={t('settings', 'language')}
             name="language"
-            initialValue={language}
           >
-            <Select onChange={handleLanguageChange}>
-              <Option value="en">English</Option>
-              <Option value="fa">فارسی</Option>
-            </Select>
+            <Select
+              value={language}
+              onChange={handleLanguageChange}
+              options={[
+                { value: 'en', label: t('settings', 'english') },
+                { value: 'fa', label: t('settings', 'persian') }
+              ]}
+            />
           </Form.Item>
 
           <Form.Item
             label={t('settings', 'apiKey')}
             name="apiKey"
-            rules={[{ required: true, message: t('settings', 'apiKeyMessage') }]}
+            rules={[
+              { required: true, message: t('settings', 'apiKeyRequired') }
+            ]}
           >
-            <Input.Password />
+            <Password />
           </Form.Item>
 
           <Form.Item
@@ -97,17 +102,21 @@ const Settings: React.FC = () => {
           <Form.Item
             label={t('settings', 'sentimentThreshold')}
             name="sentimentThreshold"
-            rules={[{ required: true, message: t('settings', 'sentimentThresholdMessage') }]}
+            rules={[
+              { required: true, message: t('settings', 'thresholdRequired') }
+            ]}
           >
-            <Input type="number" min={0} max={1} step={0.1} />
+            <InputNumber min={0} max={1} step={0.1} />
           </Form.Item>
 
           <Form.Item
             label={t('settings', 'eventConfidenceThreshold')}
             name="eventConfidenceThreshold"
-            rules={[{ required: true, message: t('settings', 'eventConfidenceMessage') }]}
+            rules={[
+              { required: true, message: t('settings', 'thresholdRequired') }
+            ]}
           >
-            <Input type="number" min={0} max={1} step={0.1} />
+            <InputNumber min={0} max={1} step={0.1} />
           </Form.Item>
 
           <Form.Item
@@ -137,4 +146,4 @@ const Settings: React.FC = () => {
   );
 };
 
-export default Settings; 
+export default SettingsComponent; 

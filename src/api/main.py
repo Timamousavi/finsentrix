@@ -1,11 +1,13 @@
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Any
 import logging
+import os
 
 from utils.text_processor import TextProcessor
 from utils.sentiment_analyzer import SentimentAnalyzer, SentimentResult
+from .services.financial_data import FinancialDataService
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -16,7 +18,7 @@ app = FastAPI(title="Persian Financial Sentiment Analysis API")
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Frontend URL
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],  # Frontend URLs
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -25,6 +27,9 @@ app.add_middleware(
 # Initialize processors
 text_processor = TextProcessor()
 sentiment_analyzer = SentimentAnalyzer()
+
+# Initialize services
+financial_service = FinancialDataService()
 
 class SentimentRequest(BaseModel):
     text: str
@@ -114,4 +119,33 @@ async def analyze_batch_sentiment(request: BatchSentimentRequest):
 @app.get("/health")
 async def health_check():
     """Health check endpoint."""
-    return {"status": "healthy"} 
+    return {"status": "healthy"}
+
+@app.get("/api/dashboard/real-time")
+async def get_real_time_data() -> Dict[str, Any]:
+    """Get real-time market data and sentiment indicators"""
+    try:
+        logger.info("Fetching real-time dashboard data")
+        
+        # For development, use mock data
+        data = financial_service.generate_mock_data()
+        logger.info(f"Generated mock data: {data}")
+        
+        # In production, uncomment these lines:
+        # market_data = await financial_service.fetch_market_data()
+        # sentiment_data = await financial_service.fetch_sentiment_indicators()
+        # data = {
+        #     "market_data": market_data,
+        #     "sentiment_data": sentiment_data
+        # }
+        
+        return {
+            "status": "success",
+            "data": data
+        }
+    except Exception as e:
+        logger.error(f"Error fetching real-time data: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to fetch real-time data: {str(e)}"
+        ) 

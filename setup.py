@@ -1,42 +1,32 @@
 from setuptools import setup, find_packages
 
+with open("README.md", "r", encoding="utf-8") as fh:
+    long_description = fh.read()
+
 setup(
     name="finsentrix",
     version="1.0.0",
     packages=find_packages(),
-    include_package_data=True,
     install_requires=[
-        "fastapi>=0.68.0",
-        "uvicorn>=0.15.0",
-        "python-jose>=3.3.0",
-        "passlib>=1.7.4",
-        "python-multipart>=0.0.5",
-        "hazm>=0.7.0",
-        "transformers>=4.11.0",
-        "torch>=1.9.0",
-        "pandas>=1.3.0",
-        "numpy>=1.21.0",
-        "scikit-learn>=0.24.2",
-        "plotly>=5.3.0",
-        "python-dotenv>=0.19.0",
+        "fastapi",
+        "uvicorn",
+        "python-dotenv",
     ],
     entry_points={
         "console_scripts": [
-            "finsentrix=finsentrix.cli:main",
+            "finsentrix=src.api.main:main",
         ],
     },
-    author="Tima Mousavi",
-    author_email="fatemehmousavy@ut.ac.ir",
-    description="Global Financial Market Sentiment Analysis",
-    long_description=open("README.md").read(),
+    author="Your Name",
+    author_email="your.email@example.com",
+    description="A sentiment analysis system for Iranian stock market",
+    long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/Timamousavi/finsentrix",
+    url="https://github.com/yourusername/iranian-stock-sentiment-analysis",
     classifiers=[
-        "Development Status :: 4 - Beta",
-        "Intended Audience :: Financial and Insurance Industry",
+        "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
-        "Programming Language :: Python :: 3.9",
         "Operating System :: OS Independent",
     ],
-    python_requires=">=3.9",
+    python_requires=">=3.8",
 ) 
