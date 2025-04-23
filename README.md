@@ -1,195 +1,158 @@
-# FinSentrix (FSX) - Global Financial Market Sentiment Analysis
+# FinSentrix - Persian Financial Sentiment Analysis
 
-<div align="center">
-  <img src="docs/assets/banner.png" alt="FinSentrix Banner" width="800"/>
-  
-  [![Python Version](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://www.python.org/downloads/)
-  [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-  [![Build Status](https://img.shields.io/github/actions/workflow/status/Timamousavi/finsentrix/ci.yml)](https://github.com/Timamousavi/finsentrix/actions)
-  [![Code Coverage](https://img.shields.io/codecov/c/github/Timamousavi/finsentrix)](https://codecov.io/gh/Timamousavi/finsentrix)
-  [![Stars](https://img.shields.io/github/stars/Timamousavi/finsentrix?style=social)](https://github.com/Timamousavi/finsentrix/stargazers)
-  [![Docker Pulls](https://img.shields.io/docker/pulls/timamousavi/finsentrix)](https://hub.docker.com/r/timamousavi/finsentrix)
-</div>
+A comprehensive system for analyzing sentiment in Persian financial texts, providing real-time market insights and sentiment indicators.
 
-## 🌟 Overview
+## Features
 
-FinSentrix provides real-time sentiment analysis across multiple languages (including English and Persian) and various financial markets worldwide. Our advanced NLP models analyze news articles, social media, and market data to deliver actionable insights.
+- **Persian Text Processing**: Advanced preprocessing for Persian financial texts
+- **Sentiment Analysis**: Deep learning-based sentiment analysis for financial content
+- **Real-time Market Data**: Integration with financial data sources
+- **Event Detection**: Automatic detection of market events and rumors
+- **Multi-language Support**: English and Persian interface
+- **API Access**: RESTful API for integration with other systems
+- **Dashboard**: Real-time visualization of market sentiment
 
-## 🚀 Key Features
+## Installation
 
-- **Global Market Coverage**: Analyze sentiment across stocks, forex, and cryptocurrencies
-- **Multi-language Support**: Specialized financial terminology in English and Persian
-- **Event-Aware Analysis**: Detect market events and correlate with sentiment shifts
-- **Rumor Detection**: Identify and analyze potential market manipulation
-- **Real-time Analysis**: Process and analyze data as it arrives
-- **Advanced NLP**: State-of-the-art models for accurate sentiment detection
-- **Comprehensive API**: Easy integration with your existing systems
-- **Beautiful Dashboard**: Intuitive interface for market insights
+### Prerequisites
 
-## 🧠 Advanced Features
+- Python 3.8+
+- Node.js 16+
+- Redis (for rate limiting)
+- PostgreSQL (for data storage)
 
-### Event-Aware Sentiment Analysis
-- Detect market events (earnings calls, central bank meetings, political news)
-- Auto-tag news with events using Named Entity Recognition
-- Timeline visualization: "Sentiment dipped before Fed meeting"
-- Correlate events with market movements
+### Backend Setup
 
-### Rumor Detection Engine
-- Use clustering + NLP to detect unverified rumors
-- Track message spread across multiple sources
-- Calculate confidence scores for rumor verification
-- Alert system for potential market manipulation
-- Anti-fake-news radar for financial content
-
-## 📊 Quick Start
-
-### Using Docker (Recommended)
-
+1. Create a virtual environment:
 ```bash
-docker pull timamousavi/finsentrix
-docker run -p 8000:8000 timamousavi/finsentrix
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 ```
 
-### Local Installation
-
+2. Install dependencies:
 ```bash
-# Clone the repository
-git clone https://github.com/Timamousavi/finsentrix.git
-cd finsentrix
-
-# Install dependencies
 pip install -r requirements.txt
-
-# Start the API server
-uvicorn src.api.main:app --host 0.0.0.0 --port 8000
 ```
 
-### Python Package
-
+3. Set up environment variables:
 ```bash
-pip install finsentrix
+cp .env.example .env
+# Edit .env with your configuration
 ```
+
+4. Initialize the database:
+```bash
+alembic upgrade head
+```
+
+### Frontend Setup
+
+1. Install dependencies:
+```bash
+cd frontend
+npm install
+```
+
+2. Start the development server:
+```bash
+npm run dev
+```
+
+## Usage
+
+### API Endpoints
+
+- `GET /`: API information
+- `POST /analyze`: Single text sentiment analysis
+- `POST /analyze/batch`: Batch sentiment analysis
+- `GET /api/dashboard/real-time`: Real-time market data
+- `GET /health`: Health check
+
+### Example API Usage
 
 ```python
-from finsentrix import FinSentrix
+import requests
 
-# Initialize the analyzer
-fsx = FinSentrix()
-
-# Analyze text with event detection
-result = fsx.analyze_with_events(
-    "Central Bank announced interest rate hike",
-    detect_events=True
+# Single text analysis
+response = requests.post(
+    "http://localhost:8000/analyze",
+    json={"text": "این شرکت در سال جاری عملکرد خوبی داشته است"}
 )
+print(response.json())
 
-# Detect rumors
-rumors = fsx.detect_rumors([
-    {"text": "Rumor about company X", "timestamp": "2024-02-20T10:00:00Z"}
-])
+# Batch analysis
+response = requests.post(
+    "http://localhost:8000/analyze/batch",
+    json={"texts": [
+        "این شرکت در سال جاری عملکرد خوبی داشته است",
+        "سهام این شرکت ریسک بالایی دارد"
+    ]}
+)
+print(response.json())
 ```
 
-## 📈 Example Results
+## Development
 
-Check out our [examples directory](examples/) for sample visualizations and insights:
-
-- [Market Sentiment Trends](examples/market_trends.md) - Analyze and visualize market sentiment trends across different market types and time periods
-- [Event-Sentiment Correlation](examples/event_correlation.md) - Study the correlation between market events and sentiment changes
-- [Rumor Analysis Dashboard](examples/rumor_analysis.md) - Create comprehensive dashboards for analyzing market rumors and their impact
-- [Crypto Market Analysis](examples/crypto_analysis.md) - Specialized analysis techniques for cryptocurrency markets
-- [Persian Market Insights](examples/persian_insights.md) - Analysis techniques for Persian financial markets with native language support
-
-Each example includes:
-- Detailed code snippets
-- Visualization examples
-- Key insights and patterns
-- Best practices
-- Implementation tips
-- Next steps for further analysis
-
-## 🎨 Example Assets
-
-The project includes an `examples/assets/` directory containing visualization examples. These assets are not tracked in Git to keep the repository size manageable. When running the examples, new visualizations will be generated in this directory.
-
-## 🛠️ Development
+### Running Tests
 
 ```bash
-# Set up development environment
-python -m venv venv
-source venv/bin/activate  # or `venv\Scripts\activate` on Windows
-pip install -r requirements-dev.txt
-
-# Run tests
+# Run all tests
 pytest
 
-# Run linting
-flake8
-black .
+# Run with coverage
+pytest --cov=src tests/
+
+# Run performance tests
+pytest tests/test_performance.py
 ```
 
-## 📚 Documentation
+### Code Style
 
-- [API Documentation](docs/API.md)
-- [User Guide](docs/USER_GUIDE.md)
-- [Developer Guide](docs/DEVELOPER_GUIDE.md)
-- [Model Architecture](docs/ARCHITECTURE.md)
+```bash
+# Format code
+black .
 
-## 🤝 Contributing
+# Check types
+mypy .
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+# Lint code
+flake8
+```
 
-## 📄 License
+### Security
+
+- Regular dependency updates
+- Rate limiting
+- Input validation
+- Secure API key handling
+- CORS protection
+
+## Performance Optimization
+
+- Async processing for batch requests
+- Redis caching
+- Database indexing
+- Query optimization
+- Memory management
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
+
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 📞 Support
+## Support
 
-For support, email support@finsentrix.com or join our [Discord community](https://discord.gg/finsentrix).
+For support, please open an issue in the GitHub repository or contact the maintainers.
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
-- State-of-the-art NLP models from Hugging Face
-- Modern web frameworks (FastAPI, React)
-- Open-source financial data providers
-
-## Project Structure
-
-```
-finsentrix/
-├── data/                    # Data collection and processing
-│   ├── raw/                # Raw collected data
-│   ├── processed/          # Processed data
-│   └── README.md          # Data documentation
-├── src/                    # Source code
-│   ├── api/               # API implementation
-│   ├── config/            # Configuration files
-│   ├── database/          # Database models and migrations
-│   ├── models/            # ML models
-│   │   ├── event_detector.py
-│   │   ├── rumor_detector.py
-│   │   └── sentiment_analyzer.py
-│   └── utils/             # Utilities
-│       ├── text_processor.py
-│       └── visualization.py
-├── tests/                 # Test suite
-│   ├── unit/             # Unit tests
-│   ├── integration/      # Integration tests
-│   └── api/              # API tests
-├── docs/                  # Documentation
-│   ├── API.md            # API documentation
-│   ├── USER_GUIDE.md     # User guide
-│   ├── DEVELOPER_GUIDE.md # Developer guide
-│   └── ARCHITECTURE.md   # Architecture documentation
-├── frontend/             # Frontend application
-├── requirements.txt      # Dependencies
-└── README.md            # Project documentation
-```
-
-## 📞 Contact
-
-For questions or suggestions, please open an issue or contact us at support@finsentrix.com.
-
----
-
-<div align="center">
-  <sub>Built with ❤️ by the FinSentrix Team</sub>
-</div> 
+- [Hazm](https://github.com/roshan-research/hazm) for Persian NLP
+- [FastAPI](https://fastapi.tiangolo.com/) for the web framework
+- [React](https://reactjs.org/) for the frontend

@@ -1,108 +1,132 @@
 import aiohttp
 import asyncio
-from datetime import datetime, timedelta
+from typing import Dict, Any, List
 import logging
-from typing import List, Dict, Any
+from datetime import datetime, timedelta
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 logger = logging.getLogger(__name__)
 
 class FinancialDataService:
     def __init__(self):
-        # Using Alpha Vantage as our data source - you'll need to replace with your API key
-        self.base_url = "https://www.alphavantage.co/query"
-        self.api_key = "YOUR_ALPHA_VANTAGE_API_KEY"  # Store this in environment variables
-        
+        self.api_key = os.getenv("FINANCIAL_DATA_API_KEY")
+        self.base_url = os.getenv("FINANCIAL_DATA_BASE_URL", "https://api.example.com")
+        self.session = None
+
+    async def __aenter__(self):
+        self.session = aiohttp.ClientSession()
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        if self.session:
+            await self.session.close()
+
     async def fetch_market_data(self) -> Dict[str, Any]:
-        """Fetch real-time market data for Tehran Stock Exchange (TEDPIX)"""
-        async with aiohttp.ClientSession() as session:
-            try:
-                # For demo, we'll use a global quote endpoint
-                params = {
-                    "function": "GLOBAL_QUOTE",
-                    "symbol": "TEDPIX.TEH",  # Tehran Stock Exchange Index
-                    "apikey": self.api_key
-                }
-                async with session.get(self.base_url, params=params) as response:
-                    if response.status == 200:
-                        data = await response.json()
-                        return self._process_market_data(data)
-                    else:
-                        logger.error(f"Failed to fetch market data: {response.status}")
-                        return {}
-            except Exception as e:
-                logger.error(f"Error fetching market data: {str(e)}")
-                return {}
-
-    async def fetch_sentiment_indicators(self) -> List[Dict[str, Any]]:
-        """Fetch and calculate sentiment indicators from various sources"""
-        async with aiohttp.ClientSession() as session:
-            try:
-                # For demo, we'll use technical indicators as a proxy for sentiment
-                params = {
-                    "function": "RSI",  # Relative Strength Index
-                    "symbol": "TEDPIX.TEH",
-                    "interval": "daily",
-                    "time_period": "14",
-                    "apikey": self.api_key
-                }
-                async with session.get(self.base_url, params=params) as response:
-                    if response.status == 200:
-                        data = await response.json()
-                        return self._process_sentiment_data(data)
-                    else:
-                        logger.error(f"Failed to fetch sentiment data: {response.status}")
-                        return []
-            except Exception as e:
-                logger.error(f"Error fetching sentiment data: {str(e)}")
-                return []
-
-    def _process_market_data(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        """Process and format market data"""
+        """Fetch real-time market data from financial data provider."""
         try:
-            quote = data.get("Global Quote", {})
-            return {
-                "price": float(quote.get("05. price", 0)),
-                "change": float(quote.get("09. change", 0)),
-                "change_percent": float(quote.get("10. change percent", "0").strip("%")),
-                "volume": int(quote.get("06. volume", 0)),
-                "timestamp": datetime.now().isoformat()
-            }
-        except (KeyError, ValueError) as e:
-            logger.error(f"Error processing market data: {str(e)}")
-            return {}
+            if not self.session:
+                self.session = aiohttp.ClientSession()
 
-    def _process_sentiment_data(self, data: Dict[str, Any]) -> List[Dict[str, Any]]:
-        """Process and format sentiment data"""
+            async with self.session.get(
+                f"{self.base_url}/market-data",
+                headers={"Authorization": f"Bearer {self.api_key}"}
+            ) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    return {
+                        "timestamp": datetime.now().isoformat(),
+                        "market_data": data
+                    }
+                else:
+                    logger.error(f"Failed to fetch market data: {response.status}")
+                    return self.generate_mock_data()
+        except Exception as e:
+            logger.error(f"Error fetching market data: {str(e)}")
+            return self.generate_mock_data()
+
+    async def fetch_sentiment_indicators(self) -> Dict[str, Any]:
+        """Fetch sentiment indicators from various sources."""
         try:
-            technical_data = data.get("Technical Analysis: RSI", {})
-            return [
-                {
-                    "timestamp": date,
-                    "sentiment_score": float(values["RSI"]) / 100,  # Normalize to 0-1
-                }
-                for date, values in list(technical_data.items())[:30]  # Last 30 days
-            ]
-        except (KeyError, ValueError) as e:
-            logger.error(f"Error processing sentiment data: {str(e)}")
-            return []
+            if not self.session:
+                self.session = aiohttp.ClientSession()
 
-    @staticmethod
-    def generate_mock_data() -> Dict[str, Any]:
-        """Generate mock data for testing when API is not available"""
-        current_time = datetime.now()
+            async with self.session.get(
+                f"{self.base_url}/sentiment-indicators",
+                headers={"Authorization": f"Bearer {self.api_key}"}
+            ) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    return {
+                        "timestamp": datetime.now().isoformat(),
+                        "sentiment_indicators": data
+                    }
+                else:
+                    logger.error(f"Failed to fetch sentiment indicators: {response.status}")
+                    return self.generate_mock_sentiment_data()
+        except Exception as e:
+            logger.error(f"Error fetching sentiment indicators: {str(e)}")
+            return self.generate_mock_sentiment_data()
+
+    def generate_mock_data(self) -> Dict[str, Any]:
+        """Generate mock market data for development."""
         return {
+            "timestamp": datetime.now().isoformat(),
             "market_data": {
-                "price": 1500000,  # Example TEDPIX value
-                "change": 15000,
-                "change_percent": 1.2,
-                "volume": 1500000000,
-                "timestamp": current_time.isoformat()
-            },
-            "sentiment_data": [
-                {
-                    "timestamp": (current_time - timedelta(days=i)).isoformat(),
-                    "sentiment_score": 0.5 + ((-1) ** i) * 0.1  # Oscillating values for demo
+                "tse_index": {
+                    "value": 150000,
+                    "change": 0.5,
+                    "volume": 1000000
+                },
+                "ifx_index": {
+                    "value": 25000,
+                    "change": -0.2,
+                    "volume": 500000
                 }
-                for i in range(30)
-            ]
-        } 
+            }
+        }
+
+    def generate_mock_sentiment_data(self) -> Dict[str, Any]:
+        """Generate mock sentiment data for development."""
+        return {
+            "timestamp": datetime.now().isoformat(),
+            "sentiment_indicators": {
+                "overall_sentiment": "positive",
+                "confidence": 0.75,
+                "sector_sentiment": {
+                    "banking": "positive",
+                    "oil": "neutral",
+                    "automotive": "negative"
+                }
+            }
+        }
+
+    async def get_real_time_data(self) -> Dict[str, Any]:
+        """Get combined real-time market and sentiment data."""
+        try:
+            market_data, sentiment_data = await asyncio.gather(
+                self.fetch_market_data(),
+                self.fetch_sentiment_indicators()
+            )
+            
+            return {
+                "status": "success",
+                "data": {
+                    "market_data": market_data["market_data"],
+                    "sentiment_data": sentiment_data["sentiment_indicators"],
+                    "timestamp": datetime.now().isoformat()
+                }
+            }
+        except Exception as e:
+            logger.error(f"Error getting real-time data: {str(e)}")
+            return {
+                "status": "error",
+                "message": str(e),
+                "data": {
+                    "market_data": self.generate_mock_data()["market_data"],
+                    "sentiment_data": self.generate_mock_sentiment_data()["sentiment_indicators"],
+                    "timestamp": datetime.now().isoformat()
+                }
+            } 

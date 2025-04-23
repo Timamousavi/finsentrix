@@ -3,6 +3,8 @@ from fastapi.testclient import TestClient
 from src.api.main import app
 import jwt
 from datetime import datetime, timedelta
+from src.utils.text_processor import TextProcessor
+from src.utils.sentiment_analyzer import SentimentAnalyzer
 
 client = TestClient(app)
 
@@ -131,4 +133,83 @@ def test_batch_invalid_input(test_token):
         json={"texts": large_batch},
         headers=headers
     )
-    assert response.status_code == 422  # Validation Error 
+    assert response.status_code == 422  # Validation Error
+
+def test_root_endpoint():
+    response = client.get("/")
+    assert response.status_code == 200
+    assert response.json()["name"] == "Persian Financial Sentiment Analysis API"
+
+def test_health_check():
+    response = client.get("/health")
+    assert response.status_code == 200
+    assert response.json()["status"] == "healthy"
+
+def test_sentiment_analysis():
+    test_text = "این شرکت در سال جاری عملکرد خوبی داشته است"
+    response = client.post(
+        "/analyze",
+        json={"text": test_text}
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert "sentiment" in data
+    assert "confidence" in data
+    assert "details" in data
+
+def test_batch_sentiment_analysis():
+    test_texts = [
+        "این شرکت در سال جاری عملکرد خوبی داشته است",
+        "سهام این شرکت ریسک بالایی دارد"
+    ]
+    response = client.post(
+        "/analyze/batch",
+        json={"texts": test_texts}
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data["results"]) == 2
+    for result in data["results"]:
+        assert "sentiment" in result
+        assert "confidence" in result
+        assert "details" in result
+
+def test_real_time_data():
+    response = client.get("/api/dashboard/real-time")
+    assert response.status_code == 200
+    data = response.json()
+    assert "status" in data
+    assert "data" in data
+    assert isinstance(data["data"], dict)
+
+def test_invalid_text():
+    response = client.post(
+        "/analyze",
+        json={"text": ""}
+    )
+    assert response.status_code == 400
+
+def test_invalid_batch():
+    response = client.post(
+        "/analyze/batch",
+        json={"texts": []}
+    )
+    assert response.status_code == 400
+
+@pytest.mark.asyncio
+async def test_text_processor():
+    processor = TextProcessor()
+    test_text = "این شرکت در سال جاری عملکرد خوبی داشته است"
+    processed_text = processor.process_text(test_text)
+    assert isinstance(processed_text, str)
+    assert len(processed_text) > 0
+
+@pytest.mark.asyncio
+async def test_sentiment_analyzer():
+    analyzer = SentimentAnalyzer()
+    test_text = "این شرکت در سال جاری عملکرد خوبی داشته است"
+    result = analyzer.analyze(test_text)
+    assert result is not None
+    assert hasattr(result, "sentiment")
+    assert hasattr(result, "confidence")
+    assert hasattr(result, "details") 
