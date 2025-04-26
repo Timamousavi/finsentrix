@@ -1,13 +1,23 @@
 from fastapi import FastAPI, HTTPException, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
 import logging
 import os
+import sys
+from pathlib import Path
+
+# Add the src directory to the Python path
+src_path = str(Path(__file__).parent.parent)
+if src_path not in sys.path:
+    sys.path.append(src_path)
 
 from utils.text_processor import TextProcessor
 from utils.sentiment_analyzer import SentimentAnalyzer, SentimentResult
-from .services.financial_data import FinancialDataService
+from services.financial_data import FinancialDataService
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -18,11 +28,17 @@ app = FastAPI(title="Persian Financial Sentiment Analysis API")
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],  # Frontend URLs
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Mount static files
+app.mount("/static", StaticFiles(directory="src/api/static"), name="static")
+
+# Configure templates
+templates = Jinja2Templates(directory="src/api/templates")
 
 # Initialize processors
 text_processor = TextProcessor()
@@ -48,26 +64,28 @@ class BatchSentimentRequest(BaseModel):
 class BatchSentimentResponse(BaseModel):
     results: List[SentimentResponse]
 
-@app.get("/")
-async def root():
-    """Root endpoint returning API information."""
-    return {
-        "name": "Persian Financial Sentiment Analysis API",
-        "version": "1.0.0",
-        "description": "Analyzes sentiment in Persian financial texts"
-    }
+@app.get("/", response_class=HTMLResponse)
+async def home(request: Request):
+    """Render the home page."""
+    return templates.TemplateResponse(
+        "index.html",
+        {"request": request}
+    )
+
+@app.get("/dashboard", response_class=HTMLResponse)
+async def dashboard(request: Request):
+    """Render the dashboard page."""
+    return templates.TemplateResponse(
+        "dashboard.html",
+        {"request": request}
+    )
 
 @app.post("/analyze", response_model=SentimentResponse)
 async def analyze_sentiment(request: SentimentRequest):
     """Analyze sentiment for a single text."""
     try:
-        # Preprocess text
-        processed_text = text_processor.process_text(request.text)
-        if not processed_text:
-            raise HTTPException(status_code=400, detail="Text preprocessing failed")
-        
-        # Analyze sentiment
-        result = sentiment_analyzer.analyze(processed_text)
+        # Analyze sentiment directly
+        result = sentiment_analyzer.analyze(request.text)
         if not result:
             raise HTTPException(status_code=500, detail="Sentiment analysis failed")
         
@@ -88,14 +106,8 @@ async def analyze_batch_sentiment(request: BatchSentimentRequest):
     try:
         results = []
         for text in request.texts:
-            # Preprocess text
-            processed_text = text_processor.process_text(text)
-            if not processed_text:
-                logger.warning(f"Text preprocessing failed for: {text}")
-                continue
-            
-            # Analyze sentiment
-            result = sentiment_analyzer.analyze(processed_text)
+            # Analyze sentiment directly
+            result = sentiment_analyzer.analyze(text)
             if not result:
                 logger.warning(f"Sentiment analysis failed for: {text}")
                 continue
@@ -130,14 +142,6 @@ async def get_real_time_data() -> Dict[str, Any]:
         # For development, use mock data
         data = financial_service.generate_mock_data()
         logger.info(f"Generated mock data: {data}")
-        
-        # In production, uncomment these lines:
-        # market_data = await financial_service.fetch_market_data()
-        # sentiment_data = await financial_service.fetch_sentiment_indicators()
-        # data = {
-        #     "market_data": market_data,
-        #     "sentiment_data": sentiment_data
-        # }
         
         return {
             "status": "success",

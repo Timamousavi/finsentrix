@@ -373,6 +373,44 @@ grep ERROR /var/log/finsentrix/app.log
 cat /var/log/finsentrix/app.log | grep "processing_time"
 ```
 
+## Development Environment Setup
+
+### Running the Development Server
+
+1. Start the FastAPI server with the following command:
+```bash
+uvicorn src.api.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+2. Access the application at:
+   - http://localhost:8000/dashboard
+   - http://localhost:8000/docs
+   - http://localhost:8000/
+
+### Troubleshooting Common Issues
+
+#### Port Conflicts
+If port 8000 is already in use:
+```bash
+# Check processes using port 8000
+netstat -ano | findstr :8000
+
+# Stop the conflicting process
+taskkill /F /PID <process_id>
+```
+
+#### Firewall Issues
+If the application is not accessible:
+1. Open Windows Defender Firewall
+2. Add an inbound rule for port 8000
+3. Allow the application through the firewall
+
+#### Browser Access Issues
+If you cannot access the application in your browser:
+1. Clear browser cache
+2. Try a different browser
+3. Verify the server is running with the correct host configuration
+
 ## Support
 
 For deployment support:

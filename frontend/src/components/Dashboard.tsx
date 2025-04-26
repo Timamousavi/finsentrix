@@ -1,77 +1,60 @@
-import React, { useState, useEffect } from 'react';
-import { Row, Col, message } from 'antd';
-import type { RowProps } from 'antd/es/grid/row';
-import type { ColProps } from 'antd/es/grid/col';
-import Card from 'antd/es/card';
-import Statistic from 'antd/es/statistic';
-import { ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
+import React, { useEffect, useState } from 'react';
+import { Card, Row, Col, Statistic, Table } from 'antd';
 import { Line } from '@ant-design/charts';
-import { analyzeSentiment, getApiInfo, getTimeline, getRecentAnalyses } from '../services/api';
+import axios from 'axios';
 
 interface MarketData {
+  timestamp: string;
   price: number;
-  change: number;
-  change_percent: number;
   volume: number;
-  timestamp: string;
-}
-
-interface SentimentData {
-  timestamp: string;
-  sentiment_score: number;
+  sentiment: number;
 }
 
 interface DashboardData {
-  market_data: MarketData;
-  sentiment_data: SentimentData[];
+  market_data: {
+    current_price: number;
+    price_change: number;
+    volume: number;
+    historical_data: MarketData[];
+  };
+  sentiment_data: {
+    overall_sentiment: number;
+    positive_count: number;
+    negative_count: number;
+    neutral_count: number;
+  };
 }
 
 const Dashboard: React.FC = () => {
+  const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [marketData, setMarketData] = useState<MarketData | null>(null);
-  const [sentimentData, setSentimentData] = useState<SentimentData[]>([]);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchRealTimeData = async () => {
-    try {
-      setError(null);
-      const response = await fetch('http://localhost:8000/api/dashboard/real-time');
-      console.log('API Response:', response);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const result = await response.json();
-      console.log('API Data:', result);
-      
-      if (result.status === 'success' && result.data) {
-        const data: DashboardData = result.data;
-        setMarketData(data.market_data);
-        setSentimentData(data.sentiment_data);
-      } else {
-        throw new Error('Invalid data format received from API');
-      }
-    } catch (error) {
-      console.error('Error fetching real-time data:', error);
-      setError(error instanceof Error ? error.message : 'Failed to fetch data');
-      message.error('Failed to fetch real-time data. Please try again later.');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   useEffect(() => {
-    fetchRealTimeData();
-    // Fetch new data every 5 minutes
-    const interval = setInterval(fetchRealTimeData, 5 * 60 * 1000);
+    const fetchData = async () => {
+      try {
+        const response = await axios.get('http://localhost:8000/api/dashboard/real-time');
+        setData(response.data.data);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+    const interval = setInterval(fetchData, 30000); // Refresh every 30 seconds
+
     return () => clearInterval(interval);
   }, []);
 
-  const config = {
-    data: sentimentData,
+  if (loading || !data) {
+    return <div>Loading...</div>;
+  }
+
+  const priceConfig = {
+    data: data.market_data.historical_data,
     xField: 'timestamp',
-    yField: 'sentiment_score',
+    yField: 'price',
     point: {
       size: 5,
       shape: 'diamond',
@@ -83,64 +66,95 @@ const Dashboard: React.FC = () => {
     },
   };
 
-  const renderStatisticCard = (
-    title: string,
-    value: number,
-    options: {
-      prefix?: React.ReactNode;
-      suffix?: string;
-      precision?: number;
-      valueStyle?: React.CSSProperties;
-    } = {}
-  ) => (
-    <Card loading={loading}>
-      <Statistic
-        title={title}
-        value={value}
-        precision={options.precision ?? 0}
-        prefix={options.prefix}
-        suffix={options.suffix}
-        valueStyle={options.valueStyle}
-      />
-    </Card>
-  );
+  const sentimentConfig = {
+    data: data.market_data.historical_data,
+    xField: 'timestamp',
+    yField: 'sentiment',
+    point: {
+      size: 5,
+      shape: 'circle',
+    },
+    label: {
+      style: {
+        fill: '#aaa',
+      },
+    },
+  };
 
   return (
-    <div style={{ padding: '24px' }}>
-      <Row gutter={[16, 16]}>
-        <Col xs={24} sm={12} md={6}>
-          {renderStatisticCard('TEDPIX', marketData?.price || 0, {
-            valueStyle: { color: '#1890ff' }
-          })}
+    <div>
+      <Row gutter={16}>
+        <Col span={6}>
+          <Card>
+            <Statistic
+              title="Current Price"
+              value={data.market_data.current_price}
+              precision={2}
+              prefix="$"
+            />
+          </Card>
         </Col>
-        <Col xs={24} sm={12} md={6}>
-          {renderStatisticCard('Change', marketData?.change_percent || 0, {
-            precision: 2,
-            prefix: marketData?.change_percent && marketData.change_percent > 0 ? <ArrowUpOutlined /> : <ArrowDownOutlined />,
-            suffix: '%',
-            valueStyle: { color: marketData?.change_percent && marketData.change_percent > 0 ? '#3f8600' : '#cf1322' }
-          })}
+        <Col span={6}>
+          <Card>
+            <Statistic
+              title="Price Change"
+              value={data.market_data.price_change}
+              precision={2}
+              valueStyle={{ color: data.market_data.price_change >= 0 ? '#3f8600' : '#cf1322' }}
+              prefix={data.market_data.price_change >= 0 ? '+' : ''}
+              suffix="%"
+            />
+          </Card>
         </Col>
-        <Col xs={24} sm={12} md={6}>
-          {renderStatisticCard('Volume', marketData?.volume || 0, {
-            valueStyle: { color: '#1890ff' }
-          })}
+        <Col span={6}>
+          <Card>
+            <Statistic
+              title="Volume"
+              value={data.market_data.volume}
+              formatter={(value) => `${value.toLocaleString()}`}
+            />
+          </Card>
         </Col>
-        <Col xs={24} sm={12} md={6}>
-          {renderStatisticCard('Market Sentiment', sentimentData.length > 0 ? sentimentData[0].sentiment_score * 100 : 0, {
-            precision: 1,
-            suffix: '%',
-            valueStyle: { 
-              color: sentimentData.length > 0 && sentimentData[0].sentiment_score > 0.5 ? '#3f8600' : '#cf1322'
-            }
-          })}
+        <Col span={6}>
+          <Card>
+            <Statistic
+              title="Overall Sentiment"
+              value={data.sentiment_data.overall_sentiment}
+              precision={2}
+              valueStyle={{ color: data.sentiment_data.overall_sentiment >= 0 ? '#3f8600' : '#cf1322' }}
+            />
+          </Card>
         </Col>
       </Row>
 
-      <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
-        <Col xs={24}>
-          <Card title="Market Sentiment Trend" loading={loading}>
-            <Line {...config} />
+      <Row gutter={16} style={{ marginTop: 16 }}>
+        <Col span={12}>
+          <Card title="Price History">
+            <Line {...priceConfig} />
+          </Card>
+        </Col>
+        <Col span={12}>
+          <Card title="Sentiment Trend">
+            <Line {...sentimentConfig} />
+          </Card>
+        </Col>
+      </Row>
+
+      <Row style={{ marginTop: 16 }}>
+        <Col span={24}>
+          <Card title="Sentiment Distribution">
+            <Table
+              dataSource={[
+                { type: 'Positive', count: data.sentiment_data.positive_count },
+                { type: 'Negative', count: data.sentiment_data.negative_count },
+                { type: 'Neutral', count: data.sentiment_data.neutral_count },
+              ]}
+              columns={[
+                { title: 'Sentiment Type', dataIndex: 'type', key: 'type' },
+                { title: 'Count', dataIndex: 'count', key: 'count' },
+              ]}
+              pagination={false}
+            />
           </Card>
         </Col>
       </Row>

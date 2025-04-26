@@ -1,16 +1,16 @@
-# FinSentrix - Persian Financial Sentiment Analysis
+# FinSentrix (FSX) - Global Financial Sentiment Analysis
 
-A comprehensive system for analyzing sentiment in Persian financial texts, providing real-time market insights and sentiment indicators.
+A comprehensive system for analyzing sentiment in financial texts across multiple languages and markets, providing real-time market insights and sentiment indicators.
 
 ## Features
 
-- **Persian Text Processing**: Advanced preprocessing for Persian financial texts
-- **Sentiment Analysis**: Deep learning-based sentiment analysis for financial content
-- **Real-time Market Data**: Integration with financial data sources
+- **Multi-language Support**: Advanced sentiment analysis for both English and Persian financial texts
+- **Market Coverage**: Analysis across Stocks, Forex, and Cryptocurrency markets
+- **Real-time Data Processing**: Integration with multiple data sources (Twitter, News, Telegram)
 - **Event Detection**: Automatic detection of market events and rumors
-- **Multi-language Support**: English and Persian interface
+- **Timeline Visualization**: Interactive visualization of market trends and sentiment
 - **API Access**: RESTful API for integration with other systems
-- **Dashboard**: Real-time visualization of market sentiment
+- **Dashboard**: Real-time visualization of market sentiment across different markets
 
 ## Installation
 
@@ -60,36 +60,84 @@ npm run dev
 
 ## Usage
 
+### Running the Application
+
+1. Start the FastAPI server:
+```bash
+uvicorn src.api.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+2. Access the application in your web browser:
+   - Dashboard: http://localhost:8000/dashboard
+   - API Documentation: http://localhost:8000/docs
+   - Home Page: http://localhost:8000/
+
+### Example Usage
+
+#### English Text Analysis
+```python
+response = requests.post(
+    "http://localhost:8000/analyze",
+    json={
+        "text": "Bitcoin shows strong bullish momentum",
+        "language": "en",
+        "market_type": "crypto"
+    }
+)
+```
+
+#### Persian Text Analysis
+```python
+response = requests.post(
+    "http://localhost:8000/analyze",
+    json={
+        "text": "این شرکت در سال جاری عملکرد خوبی داشته است",
+        "language": "fa",
+        "market_type": "stock"
+    }
+)
+```
+
+#### Real-time Market Analysis
+```python
+response = requests.get(
+    "http://localhost:8000/api/dashboard/real-time",
+    params={
+        "market_types": ["stock", "forex", "crypto"],
+        "sources": ["twitter", "news", "telegram"]
+    }
+)
+```
+
 ### API Endpoints
 
 - `GET /`: API information
 - `POST /analyze`: Single text sentiment analysis
 - `POST /analyze/batch`: Batch sentiment analysis
 - `GET /api/dashboard/real-time`: Real-time market data
+- `GET /api/events`: Market events detection
+- `GET /api/rumors`: Rumor analysis
 - `GET /health`: Health check
 
-### Example API Usage
+### Troubleshooting
 
-```python
-import requests
+If you cannot access the application:
 
-# Single text analysis
-response = requests.post(
-    "http://localhost:8000/analyze",
-    json={"text": "این شرکت در سال جاری عملکرد خوبی داشته است"}
-)
-print(response.json())
-
-# Batch analysis
-response = requests.post(
-    "http://localhost:8000/analyze/batch",
-    json={"texts": [
-        "این شرکت در سال جاری عملکرد خوبی داشته است",
-        "سهام این شرکت ریسک بالایی دارد"
-    ]}
-)
-print(response.json())
+1. Check if the server is running:
+```bash
+netstat -ano | findstr :8000
 ```
+
+2. If the port is in use, stop existing processes:
+```bash
+taskkill /F /PID <process_id>
+```
+
+3. Common issues and solutions:
+   - **Firewall Blocking**: Add an inbound rule for port 8000 in Windows Defender Firewall
+   - **Port Already in Use**: Stop any other applications using port 8000
+   - **Browser Issues**: Try clearing cache or using a different browser
+   - **Connection Refused**: Make sure the server is running with the correct host configuration
 
 ## Development
 

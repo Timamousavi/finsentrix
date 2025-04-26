@@ -18,70 +18,27 @@ code {
 
 .ant-layout-header {
   background: #fff;
-  padding: 0 24px;
+  padding: 0;
   box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
 }
 
 .ant-layout-sider {
-  box-shadow: 2px 0 8px 0 rgba(29, 35, 41, 0.05);
-}
-
-.ant-layout-content {
-  margin: 24px 16px;
-  padding: 24px;
   background: #fff;
-  min-height: 280px;
+  box-shadow: 2px 0 6px rgba(0, 21, 41, 0.35);
 }
 
-.logo {
-  height: 32px;
-  margin: 16px;
-  background: rgba(0, 0, 0, 0.2);
+.ant-menu {
+  border-right: none;
 }
 
 .ant-card {
   margin-bottom: 16px;
 }
 
-.ant-statistic {
-  text-align: center;
-}
-
-.ant-timeline-item-content {
-  padding: 12px 16px;
-  background: #fafafa;
-  border-radius: 4px;
+.ant-statistic-title {
+  font-size: 14px;
 }
 
 .ant-table {
   margin-top: 16px;
-}
-
-.ant-form {
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.ant-alert {
-  margin-bottom: 16px;
-}
-
-.ant-progress {
-  margin-bottom: 8px;
-}
-
-.ant-tag {
-  margin-right: 8px;
-}
-
-.ant-space {
-  width: 100%;
-}
-
-.ant-input-number {
-  width: 100%;
-}
-
-.ant-switch {
-  margin-right: 8px;
 } 

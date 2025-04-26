@@ -2,17 +2,18 @@
 
 ## Introduction
 
-Welcome to FinSentrix (FSX), your comprehensive solution for global financial market sentiment analysis. This guide will help you get started with using FinSentrix effectively.
+Welcome to FinSentrix (FSX), your comprehensive solution for global financial market sentiment analysis. This guide will help you get started with using FinSentrix effectively across multiple languages and markets.
 
 ## Table of Contents
 1. [Getting Started](#getting-started)
 2. [Basic Usage](#basic-usage)
-3. [Event Detection](#event-detection)
-4. [Rumor Analysis](#rumor-analysis)
-5. [Advanced Features](#advanced-features)
-6. [Best Practices](#best-practices)
-7. [Troubleshooting](#troubleshooting)
-8. [FAQ](#faq)
+3. [Market Analysis](#market-analysis)
+4. [Event Detection](#event-detection)
+5. [Rumor Analysis](#rumor-analysis)
+6. [Advanced Features](#advanced-features)
+7. [Best Practices](#best-practices)
+8. [Troubleshooting](#troubleshooting)
+9. [FAQ](#faq)
 
 ## Getting Started
 
@@ -60,17 +61,88 @@ fsx = FinSentrix(api_key="your_api_key")
 
 ### Sentiment Analysis
 
+#### English Text
 ```python
-# Analyze single text
-result = fsx.analyze("Bitcoin shows strong bullish momentum")
+# Analyze English text
+result = fsx.analyze(
+    text="Bitcoin shows strong bullish momentum",
+    language="en",
+    market_type="crypto"
+)
 print(f"Sentiment: {result.sentiment}")
 print(f"Confidence: {result.confidence}")
+```
 
-# Analyze multiple texts
+#### Persian Text
+```python
+# Analyze Persian text
+result = fsx.analyze(
+    text="این شرکت در سال جاری عملکرد خوبی داشته است",
+    language="fa",
+    market_type="stock"
+)
+print(f"Sentiment: {result.sentiment}")
+print(f"Confidence: {result.confidence}")
+```
+
+#### Batch Analysis
+```python
+# Analyze multiple texts across different languages and markets
 results = fsx.analyze_batch([
-    "Stock market rally continues",
-    "Market correction expected"
+    {
+        "text": "Stock market rally continues",
+        "language": "en",
+        "market_type": "stock"
+    },
+    {
+        "text": "بازار امروز روند مثبتی دارد",
+        "language": "fa",
+        "market_type": "stock"
+    }
 ])
+```
+
+## Market Analysis
+
+### Real-time Market Data
+
+```python
+# Get real-time market data
+market_data = fsx.get_market_data(
+    market_types=["stock", "forex", "crypto"],
+    sources=["twitter", "news", "telegram"]
+)
+
+# Print market trends
+for market in market_data:
+    print(f"Market: {market.type}")
+    print(f"Sentiment: {market.sentiment}")
+    print(f"Trend: {market.trend}")
+```
+
+### Market-Specific Analysis
+
+```python
+# Stock market analysis
+stock_result = fsx.analyze(
+    text="AAPL showing strong growth",
+    market_type="stock",
+    language="en"
+)
+
+# Forex market analysis
+forex_result = fsx.analyze(
+    text="EUR/USD expected to rise",
+    market_type="forex",
+    language="en"
+)
+
+# Crypto market analysis
+crypto_result = fsx.analyze(
+    text="Bitcoin reaching new ATH",
+    market_type="crypto",
+    language="en"
+)
 ```
 
 ## Event Detection
@@ -80,7 +152,9 @@ results = fsx.analyze_batch([
 ```python
 # Detect events in text
 events = fsx.detect_events(
-    "Central Bank announced interest rate hike of 0.5%"
+    text="Central Bank announced interest rate hike of 0.5%",
+    language="en",
+    market_type="forex"
 )
 
 # Print event details
@@ -96,7 +170,9 @@ for event in events:
 # Get sentiment timeline with events
 timeline = fsx.get_timeline(
     start_time="2024-02-01",
-    end_time="2024-02-20"
+    end_time="2024-02-20",
+    market_types=["stock", "forex", "crypto"],
+    languages=["en", "fa"]
 )
 
 # Display interactive timeline
@@ -110,8 +186,18 @@ timeline.show()
 ```python
 # Analyze messages for rumors
 messages = [
-    {"text": "Rumor about company X", "timestamp": "2024-02-20T10:00:00Z"},
-    {"text": "Similar rumor about X", "timestamp": "2024-02-20T11:00:00Z"}
+    {
+        "text": "Rumor about company X",
+        "timestamp": "2024-02-20T10:00:00Z",
+        "language": "en",
+        "market_type": "stock"
+    },
+    {
+        "text": "Similar rumor about X",
+        "timestamp": "2024-02-20T11:00:00Z",
+        "language": "en",
+        "market_type": "stock"
+    }
 ]
 
 rumors = fsx.detect_rumors(messages)
@@ -127,7 +213,11 @@ for rumor in rumors:
 
 ```python
 # Get high-confidence rumor alerts
-alerts = fsx.get_rumor_alerts(threshold=0.7)
+alerts = fsx.get_rumor_alerts(
+    threshold=0.7,
+    market_types=["stock", "forex", "crypto"],
+    languages=["en", "fa"]
+)
 
 # Process alerts
 for alert in alerts:
@@ -138,44 +228,6 @@ for alert in alerts:
 ```
 
 ## Advanced Features
-
-### Market-Specific Analysis
-
-```python
-# Stock market analysis
-stock_result = fsx.analyze(
-    text="AAPL showing strong growth",
-    market_type="stock"
-)
-
-# Forex market analysis
-forex_result = fsx.analyze(
-    text="EUR/USD expected to rise",
-    market_type="forex"
-)
-
-# Crypto market analysis
-crypto_result = fsx.analyze(
-    text="Bitcoin reaching new ATH",
-    market_type="crypto"
-)
-```
-
-### Language Support
-
-```python
-# English text
-en_result = fsx.analyze(
-    text="Market showing positive trends",
-    language="en"
-)
-
-# Persian text
-fa_result = fsx.analyze(
-    text="بازار امروز روند مثبتی دارد",
-    language="fa"
-)
-```
 
 ### Real-Time Analysis
 
@@ -188,7 +240,8 @@ rt_analyzer = RealTimeAnalyzer()
 # Start monitoring
 rt_analyzer.start_monitoring(
     sources=["twitter", "news", "telegram"],
-    market_types=["stock", "crypto"],
+    market_types=["stock", "forex", "crypto"],
+    languages=["en", "fa"],
     callback=handle_sentiment_update
 )
 
@@ -202,7 +255,9 @@ def handle_sentiment_update(update):
 # Add custom event types
 fsx.add_event_type(
     name="custom_event",
-    keywords=["custom", "event", "keywords"]
+    keywords=["custom", "event", "keywords"],
+    market_types=["stock", "forex", "crypto"],
+    languages=["en", "fa"]
 )
 ```
 
@@ -213,7 +268,7 @@ fsx.add_event_type(
 fsx.add_rumor_patterns([
     "custom pattern 1",
     "custom pattern 2"
-])
+], market_types=["stock", "forex", "crypto"])
 ```
 
 ### Visualization Customization
@@ -224,6 +279,8 @@ timeline = fsx.get_timeline(
     start_time="2024-02-01",
     end_time="2024-02-20",
     title="Custom Timeline",
+    market_types=["stock", "forex", "crypto"],
+    languages=["en", "fa"],
     colors={
         "sentiment": "blue",
         "events": "red"
@@ -237,41 +294,49 @@ timeline = fsx.get_timeline(
    - Remove URLs and special characters
    - Normalize text length (100-500 characters optimal)
    - Use clear, concise language
+   - Specify language when known
 
 2. **Market Selection**
    - Choose appropriate market type
    - Consider market-specific terminology
    - Account for market hours
+   - Use correct market indicators
 
 3. **Language Handling**
    - Specify language when known
    - Use appropriate character encoding
    - Consider cultural context
+   - Handle language-specific formatting
 
 4. **Performance Optimization**
    - Use batch processing for multiple texts
    - Cache results when possible
    - Monitor API usage
+   - Use appropriate market filters
 
 5. **Event Detection**
    - Use clear, concise text for better event detection
    - Include relevant context in event descriptions
    - Monitor event sentiment impact over time
+   - Consider market-specific events
 
 6. **Rumor Analysis**
    - Set appropriate confidence thresholds
    - Consider message volume and spread
    - Monitor pattern matches and time spans
+   - Account for market context
 
 7. **Data Collection**
    - Collect data from diverse sources
    - Maintain proper timestamps
    - Include message metadata when available
+   - Consider source reliability
 
 8. **Visualization**
    - Use appropriate time ranges
    - Customize colors for better visibility
    - Include relevant annotations
+   - Consider market-specific visualizations
 
 ## Troubleshooting
 
@@ -286,23 +351,31 @@ timeline = fsx.get_timeline(
    - Explicitly specify language
    - Check text encoding
    - Verify language support
+   - Handle mixed-language content
 
 3. **Market Type Issues**
    - Verify market type support
    - Check market-specific terminology
    - Consider market context
+   - Use appropriate market indicators
 
 4. **Event Detection**
    - Issue: Events not detected
    - Solution: Check text clarity and add relevant keywords
+   - Consider market-specific events
+   - Verify language support
 
 5. **Rumor Analysis**
    - Issue: Low confidence scores
    - Solution: Adjust time window and pattern matching
+   - Consider market context
+   - Verify source reliability
 
 6. **Visualization**
    - Issue: Timeline not displaying
    - Solution: Check data format and time ranges
+   - Verify market data availability
+   - Consider language-specific formatting
 
 ### Getting Help
 
@@ -325,20 +398,59 @@ timeline = fsx.get_timeline(
    - Accuracy varies by market and language
    - Typically 85-90% for well-formatted text
    - Higher for market-specific content
+   - Better for single-language content
 
 4. **Can I use FinSentrix for real-time analysis?**
    - Yes, through the RealTimeAnalyzer
    - Supports multiple data sources
    - Configurable update intervals
+   - Market-specific monitoring
 
 5. **How do I handle rate limits?**
    - Monitor API usage
    - Implement exponential backoff
    - Consider upgrading plan
+   - Use batch processing
 
 ## Updates and Maintenance
 
 - Check for updates regularly
 - Review changelog before updating
 - Backup configurations
-- Test new versions in staging 
+- Test new versions in staging
+
+## Accessing the Application
+
+### Web Interface
+
+1. Start the server:
+```bash
+uvicorn src.api.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+2. Open your web browser and navigate to:
+   - Dashboard: http://localhost:8000/dashboard
+   - API Documentation: http://localhost:8000/docs
+   - Home Page: http://localhost:8000/
+
+### Troubleshooting Access Issues
+
+If you cannot access the application:
+
+1. Verify the server is running:
+```bash
+netstat -ano | findstr :8000
+```
+
+2. If needed, stop existing processes:
+```bash
+taskkill /F /PID <process_id>
+```
+
+3. Common solutions:
+   - Add port 8000 to Windows Defender Firewall exceptions
+   - Ensure no other applications are using port 8000
+   - Try clearing browser cache or using a different browser
+   - Verify the server is running with the correct host configuration
+
+## Using the Dashboard 

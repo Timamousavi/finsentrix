@@ -1,0 +1,134 @@
+/* General Styles */
+body {
+    font-family: 'Vazirmatn', system-ui, -apple-system, sans-serif;
+    background-color: #f8f9fa;
+}
+
+/* Navigation */
+.navbar-brand {
+    font-weight: 600;
+}
+
+/* Cards */
+.card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.card-header {
+    border-radius: 10px 10px 0 0 !important;
+    font-weight: 600;
+}
+
+/* Form Elements */
+.form-control {
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    padding: 12px;
+    font-size: 16px;
+}
+
+.form-control:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.25rem rgba(13,110,253,.25);
+}
+
+/* Buttons */
+.btn {
+    border-radius: 8px;
+    padding: 8px 20px;
+    font-weight: 500;
+}
+
+/* Results */
+.alert {
+    border-radius: 8px;
+    padding: 15px;
+}
+
+.alert-positive {
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+    color: #155724;
+}
+
+.alert-negative {
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    color: #721c24;
+}
+
+.alert-neutral {
+    background-color: #e2e3e5;
+    border-color: #d6d8db;
+    color: #383d41;
+}
+
+/* Market Stats */
+.market-stat {
+    text-align: center;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+.market-stat h6 {
+    color: #6c757d;
+    margin-bottom: 10px;
+}
+
+.market-stat .h4 {
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.change-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.change-positive {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.change-negative {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+/* Details List */
+.list-group-item {
+    border-radius: 8px !important;
+    margin-bottom: 5px;
+    border: 1px solid rgba(0,0,0,.125);
+}
+
+.term-score {
+    float: left;
+    font-weight: 500;
+}
+
+.term-positive {
+    color: #155724;
+}
+
+.term-negative {
+    color: #721c24;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .container {
+        padding: 15px;
+    }
+    
+    .card {
+        margin-bottom: 15px;
+    }
+} 
