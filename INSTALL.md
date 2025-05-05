@@ -83,9 +83,3 @@
    - Check if port 8000 is available
    - Ensure firewall allows the connection
 
-### Getting Help
-
-For installation support:
-- Email: support@finsentrix.com
-- Documentation: https://docs.finsentrix.com
-- Issues: https://github.com/Timamousavi/finsentrix/issues 
