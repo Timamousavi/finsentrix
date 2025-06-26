@@ -74,4 +74,4 @@ For security-related concerns, please contact:
 
 This security policy will be reviewed and updated regularly to address new security concerns and best practices.
 
-Last updated: April 16th 2025 
+Last updated: June 26th 2025 
