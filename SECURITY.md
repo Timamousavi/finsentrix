@@ -8,7 +8,7 @@
 
 ## Reporting a Vulnerability
 
-If you discover a security vulnerability within this project, please send an email to [your-email@example.com]. All security vulnerabilities will be promptly addressed.
+If you discover a security vulnerability within this project, please send an email to [fatemehmousavy@ut.ac.ir]. All security vulnerabilities will be promptly addressed.
 
 ### Security Measures
 
