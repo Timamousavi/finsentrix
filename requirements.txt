@@ -118,4 +118,4 @@ pandas==2.2.0
 numpy==1.26.3
 scikit-learn==1.4.0
 --find-links https://download.pytorch.org/whl/torch_stable.html
-torch==2.2.0+cpu 
+torch==2.7.0 
