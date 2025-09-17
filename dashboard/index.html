@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinSentrix - Global Financial Sentiment Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/sahel-font@v3.4.0/dist/font-face.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #111827; /* bg-gray-900 */
+        }
+        body.lang-fa {
+            font-family: 'Sahel', sans-serif;
+        }
+        .apexcharts-tooltip {
+            background: #1f2937; /* bg-gray-800 */
+            color: #f3f4f6; /* bg-gray-100 */
+            border: 1px solid #374151; /* border-gray-700 */
+        }
+        .apexcharts-tooltip.apexcharts-theme-light .apexcharts-tooltip-title {
+            background: #1f2937; /* bg-gray-800 */
+            border-bottom: 1px solid #374151; /* border-gray-700 */
+        }
+        .card {
+            background-color: #1f2937; /* bg-gray-800 */
+            border-radius: 0.75rem; /* rounded-xl */
+            border: 1px solid #374151; /* border-gray-700 */
+            transition: all 0.3s ease-in-out;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        /* Custom scrollbar for events feed */
+        .events-feed::-webkit-scrollbar {
+            width: 6px;
+        }
+        .events-feed::-webkit-scrollbar-track {
+            background: #1f2937; /* bg-gray-800 */
+        }
+        .events-feed::-webkit-scrollbar-thumb {
+            background: #4b5563; /* bg-gray-600 */
+            border-radius: 3px;
+        }
+        .events-feed::-webkit-scrollbar-thumb:hover {
+            background: #6b7280; /* bg-gray-500 */
+        }
+        .modal {
+            background-color: rgba(0, 0, 0, 0.5);
+            transition: opacity 0.3s ease;
+        }
+        .modal-content {
+            background-color: #1f2937; /* bg-gray-800 */
+            transition: transform 0.3s ease;
+        }
+    </style>
+</head>
+<body class="text-gray-200">
+    <div class="p-4 sm:p-6 lg:p-8">
+        <!-- Header -->
+        <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+            <div>
+                <h1 class="text-3xl font-bold text-white" data-translate-key="dashboardTitle">FinSentrix Dashboard</h1>
+                <p class="text-gray-400" data-translate-key="dashboardSubtitle">Real-time Global Financial Sentiment Analysis</p>
+            </div>
+            <div class="flex items-center gap-4 mt-4 sm:mt-0">
+                 <button id="ai-briefing-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-300 flex items-center gap-2">
+                    <span class="transform text-xl">✨</span> <span data-translate-key="aiBriefing">AI Market Briefing</span>
+                </button>
+                <div class="flex items-center gap-2">
+                    <button id="lang-en" class="px-3 py-1 text-sm font-medium rounded-md bg-gray-700 text-white">EN</button>
+                    <button id="lang-fa" class="px-3 py-1 text-sm font-medium rounded-md text-gray-400">FA</button>
+                </div>
+                <div class="flex items-center gap-3 text-sm text-gray-400">
+                    <div class="relative flex h-3 w-3">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                    </div>
+                    <span id="last-updated"><span data-translate-key="lastUpdated">Last updated</span>: ...</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dashboard Grid -->
+        <main class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <!-- Left Column -->
+            <div class="lg:col-span-2 flex flex-col gap-6">
+                <!-- Market Overview -->
+                <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="card p-4">
+                        <h2 class="text-lg font-semibold text-gray-300 mb-2" data-translate-key="iranStocks">Iran Stocks Sentiment</h2>
+                        <div id="stocks-chart"></div>
+                    </div>
+                    <div class="card p-4">
+                        <h2 class="text-lg font-semibold text-gray-300 mb-2" data-translate-key="forex">Forex Sentiment</h2>
+                        <div id="forex-chart"></div>
+                    </div>
+                    <div class="card p-4">
+                        <h2 class="text-lg font-semibold text-gray-300 mb-2" data-translate-key="crypto">Crypto Sentiment</h2>
+                        <div id="crypto-chart"></div>
+                    </div>
+                </section>
+                
+                <!-- Sentiment Timeline -->
+                <section class="card p-4">
+                    <h2 class="text-xl font-bold text-white mb-4" data-translate-key="timeline">Sentiment Timeline</h2>
+                    <div id="timeline-chart"></div>
+                </section>
+            </div>
+
+            <!-- Right Column -->
+            <div class="lg:col-span-1 flex flex-col gap-6">
+                <!-- Sentiment by Source -->
+                <section class="card p-4">
+                    <h2 class="text-xl font-bold text-white mb-4" data-translate-key="source">Sentiment by Source</h2>
+                    <div id="source-chart"></div>
+                </section>
+                
+                <!-- Language Distribution -->
+                <section class="card p-4">
+                    <h2 class="text-xl font-bold text-white mb-4" data-translate-key="language">Language Distribution</h2>
+                    <div id="language-chart"></div>
+                </section>
+
+                <!-- Recent Events -->
+                <section class="card p-4 flex flex-col">
+                    <h2 class="text-xl font-bold text-white mb-4" data-translate-key="eventsOnly">Recent Events</h2>
+                    <div id="events-feed" class="events-feed flex-grow overflow-y-auto h-48 pr-2">
+                        <!-- Events will be injected here -->
+                    </div>
+                </section>
+
+                <!-- Rumor Detector -->
+                <section class="card p-4 flex flex-col">
+                    <h2 class="text-xl font-bold text-white mb-4" data-translate-key="rumorDetector">Rumor Detector</h2>
+                    <div id="rumors-feed" class="events-feed flex-grow overflow-y-auto h-48 pr-2">
+                        <!-- Rumors will be injected here -->
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- AI Briefing Modal -->
+    <div id="ai-modal" class="modal fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+        <div class="absolute inset-0" id="modal-backdrop"></div>
+        <div class="modal-content w-full max-w-2xl rounded-xl shadow-lg z-10 transform scale-95">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-bold text-white flex items-center gap-2">✨ <span data-translate-key="aiBriefingModalTitle">AI Market Briefing</span></h2>
+                    <button id="close-modal-btn" class="text-gray-400 hover:text-white text-3xl leading-none">&times;</button>
+                </div>
+                <div id="briefing-content" class="text-gray-300 space-y-4">
+                     <p data-translate-key="briefingPlaceholder">Click the button below to generate a real-time market summary based on the latest sentiment data.</p>
+                </div>
+                 <div id="briefing-sources" class="mt-4 border-t border-gray-700 pt-4 hidden">
+                    <h3 class="font-semibold text-gray-200 mb-2" data-translate-key="sources">Sources:</h3>
+                    <div id="sources-list" class="text-sm space-y-2"></div>
+                </div>
+                <div class="mt-6 flex justify-end">
+                    <button id="generate-briefing-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-300">
+                        <span data-translate-key="generateBriefing">Generate Briefing</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            let currentLanguage = 'en';
+
+            const translations = {
+                en: {
+                    dashboardTitle: "FinSentrix Dashboard",
+                    dashboardSubtitle: "Real-time Global Financial Sentiment Analysis",
+                    aiBriefing: "AI Market Briefing",
+                    lastUpdated: "Last updated",
+                    iranStocks: "Iran Stocks Sentiment",
+                    forex: "Forex Sentiment",
+                    crypto: "Crypto Sentiment",
+                    timeline: "Sentiment Timeline",
+                    source: "Sentiment by Source",
+                    language: "Language Distribution",
+                    events: "Recent Events & Rumors",
+                    eventsOnly: "Recent Events",
+                    rumorDetector: "Rumor Detector",
+                    aiBriefingModalTitle: "AI Market Briefing",
+                    briefingPlaceholder: "Click the button below to generate a real-time market summary based on the latest sentiment data.",
+                    sources: "Sources:",
+                    generateBriefing: "Generate Briefing",
+                    generatingAnalysis: "Generating analysis...",
+                    failedToGenerate: "Failed to generate briefing. Please check the console for details.",
+                    positive: "Positive",
+                    negative: "Negative",
+                    neutral: "Neutral",
+                    twitter: "Twitter",
+                    news: "News",
+                    telegram: "Telegram",
+                    english: "English",
+                    persian: "Persian",
+                    totalPosts: "Total Posts",
+                },
+                fa: {
+                    dashboardTitle: "داشبورد فین‌سنتریکس",
+                    dashboardSubtitle: "تحلیل احساسات مالی جهانی در زمان واقعی",
+                    aiBriefing: "گزارش بازار هوش مصنوعی",
+                    lastUpdated: "آخرین بروزرسانی",
+                    iranStocks: "احساسات بورس ایران",
+                    forex: "احساسات فارکس",
+                    crypto: "احساسات رمزارز",
+                    timeline: "خط زمانی احساسات",
+                    source: "احساسات بر اساس منبع",
+                    language: "توزیع زبان",
+                    events: "رویدادها و شایعات اخیر",
+                    eventsOnly: "رویدادهای اخیر",
+                    rumorDetector: "ردیاب شایعات",
+                    aiBriefingModalTitle: "گزارش بازار هوش مصنوعی",
+                    briefingPlaceholder: "برای تولید خلاصه‌ای از بازار بر اساس آخرین داده‌های احساسات، روی دکمه زیر کلیک کنید.",
+                    sources: "منابع:",
+                    generateBriefing: "تولید گزارش",
+                    generatingAnalysis: "در حال تولید تحلیل...",
+                    failedToGenerate: "تولید گزارش با شکست مواجه شد. لطفاً کنسول را بررسی کنید.",
+                    positive: "مثبت",
+                    negative: "منفی",
+                    neutral: "خنثی",
+                    twitter: "توییتر",
+                    news: "اخبار",
+                    telegram: "تلگرام",
+                    english: "انگلیسی",
+                    persian: "فارسی",
+                    totalPosts: "کل پست‌ها",
+                }
+            };
+            
+            function setLanguage(lang) {
+                currentLanguage = lang;
+                document.documentElement.lang = lang;
+                document.documentElement.dir = lang === 'fa' ? 'rtl' : 'ltr';
+                document.body.className = `text-gray-200 lang-${lang}`;
+
+                document.querySelectorAll('[data-translate-key]').forEach(el => {
+                    const key = el.getAttribute('data-translate-key');
+                    el.textContent = translations[lang][key];
+                });
+
+                // Update language buttons
+                const enBtn = document.getElementById('lang-en');
+                const faBtn = document.getElementById('lang-fa');
+                if (lang === 'en') {
+                    enBtn.classList.add('bg-gray-700', 'text-white');
+                    enBtn.classList.remove('text-gray-400');
+                    faBtn.classList.add('text-gray-400');
+                    faBtn.classList.remove('bg-gray-700', 'text-white');
+                } else {
+                    faBtn.classList.add('bg-gray-700', 'text-white');
+                    faBtn.classList.remove('text-gray-400');
+                    enBtn.classList.add('text-gray-400');
+                    enBtn.classList.remove('bg-gray-700', 'text-white');
+                }
+                
+                // Update charts
+                timelineChart.updateOptions({
+                    xaxis: {
+                        title: { text: '' } // Clear previous titles if any
+                    },
+                    yaxis: {
+                        title: { text: '' }
+                    },
+                    legend: {
+                        position: lang === 'fa' ? 'top' : 'bottom',
+                    }
+                });
+                
+                sourceChart.updateOptions({
+                     labels: [translations[lang].twitter, translations[lang].news, translations[lang].telegram],
+                     plotOptions: { pie: { donut: { labels: { total: { label: translations[lang].totalPosts } } } } }
+                });
+
+                languageChart.updateOptions({
+                    xaxis: {
+                        categories: [translations[lang].english, translations[lang].persian]
+                    }
+                });
+            }
+
+
+            // --- CHART OPTIONS ---
+            // Common options for gauge charts
+            const gaugeOptions = (color) => ({
+                chart: { type: 'radialBar', sparkline: { enabled: true } },
+                series: [0],
+                plotOptions: {
+                    radialBar: {
+                        startAngle: -90,
+                        endAngle: 90,
+                        hollow: { margin: 5, size: '50%' },
+                        track: { background: '#374151' },
+                        dataLabels: {
+                            name: { show: false },
+                            value: {
+                                offsetY: -2,
+                                fontSize: '22px',
+                                color: color,
+                                formatter: (val) => `${val}%`,
+                            }
+                        }
+                    }
+                },
+                fill: { colors: [color] },
+                stroke: { dashArray: 4 },
+                labels: ['Sentiment'],
+            });
+
+            // Timeline Chart Options
+            const timelineOptions = {
+                chart: { type: 'area', height: 350, toolbar: { show: false }, zoom: { enabled: false } },
+                series: [
+                    { name: 'Stocks', data: [] },
+                    { name: 'Forex', data: [] },
+                    { name: 'Crypto', data: [] },
+                ],
+                dataLabels: { enabled: false },
+                stroke: { curve: 'smooth', width: 2 },
+                xaxis: {
+                    type: 'datetime',
+                    labels: {
+                        style: { colors: '#9ca3af' }
+                    }
+                },
+                yaxis: {
+                    min: -100, max: 100,
+                    labels: {
+                        style: { colors: '#9ca3af' },
+                        formatter: (val) => `${val}%`,
+                    }
+                },
+                colors: ['#34d399', '#60a5fa', '#f59e0b'],
+                tooltip: { theme: 'dark' },
+                grid: { borderColor: '#374151' },
+                legend: { labels: { colors: '#d1d5db' } }
+            };
+
+            // Source Chart Options
+            const sourceOptions = {
+                chart: { type: 'donut', height: 250 },
+                series: [0, 0, 0],
+                labels: ['Twitter', 'News', 'Telegram'],
+                colors: ['#60a5fa', '#34d399', '#a78bfa'],
+                legend: { position: 'bottom', labels: { colors: '#d1d5db' } },
+                dataLabels: { enabled: false },
+                plotOptions: { pie: { donut: { labels: { show: true, total: { show: true, label: 'Total Posts', color: '#d1d5db' } } } } }
+            };
+
+            // Language Chart Options
+            const languageOptions = {
+                chart: { type: 'bar', height: 210, toolbar: { show: false } },
+                series: [{ name: 'Posts', data: [0, 0] }],
+                xaxis: { categories: ['English', 'Persian'], labels: { style: { colors: '#9ca3af' } } },
+                yaxis: { labels: { style: { colors: '#9ca3af' } } },
+                colors: ['#34d399'],
+                grid: { borderColor: '#374151' },
+                plotOptions: { bar: { horizontal: true, borderRadius: 4 } },
+                dataLabels: { enabled: false }
+            };
+
+
+            // --- CHART INITIALIZATION ---
+            const stocksChart = new ApexCharts(document.querySelector("#stocks-chart"), gaugeOptions('#34d399'));
+            const forexChart = new ApexCharts(document.querySelector("#forex-chart"), gaugeOptions('#60a5fa'));
+            const cryptoChart = new ApexCharts(document.querySelector("#crypto-chart"), gaugeOptions('#f59e0b'));
+            const timelineChart = new ApexCharts(document.querySelector("#timeline-chart"), timelineOptions);
+            const sourceChart = new ApexCharts(document.querySelector("#source-chart"), sourceOptions);
+            const languageChart = new ApexCharts(document.querySelector("#language-chart"), languageOptions);
+            
+            stocksChart.render();
+            forexChart.render();
+            cryptoChart.render();
+            timelineChart.render();
+            sourceChart.render();
+            languageChart.render();
+
+            // --- DATA & HELPERS ---
+            const MAX_DATA_POINTS = 30;
+            let timelineData = {
+                stocks: [],
+                forex: [],
+                crypto: []
+            };
+            
+            function getRandomInt(min, max) {
+                min = Math.ceil(min);
+                max = Math.floor(max);
+                return Math.floor(Math.random() * (max - min + 1)) + min;
+            }
+
+            let currentMarketState = {};
+
+            const mockEvents = [
+                // English Events
+                { title: "FED hints at interest rate cuts, market reacts positively.", sentiment: "Positive", source: "News", type: "event" },
+                { title: "Rumors of $BTC ETF approval causing surge in speculation.", sentiment: "Positive", source: "Twitter", type: "rumor" },
+                { title: "Unexpected inflation data from EU impacts EUR/USD pairs.", sentiment: "Negative", source: "News", type: "event" },
+                { title: "Tech Giant $AAPL misses earnings expectations, stock dips.", sentiment: "Negative", source: "Telegram", type: "event" },
+                { title: "Major crypto exchange announces security audit completion.", sentiment: "Neutral", source: "Twitter", type: "event" },
+                { title: "Central Bank of Iran holds currency rates steady.", sentiment: "Neutral", source: "News", type: "event"},
+                { title: "Retail trader sentiment for $TSLA is overwhelmingly bullish on social media.", sentiment: "Positive", source: "Twitter", type: "rumor"},
+                // Persian Events
+                { title: "بانک مرکزی نرخ بهره را برای کنترل تورم افزایش داد.", sentiment: "Neutral", source: "News", type: "event" },
+                { title: "شایعاتی مبنی بر عرضه اولیه سهام یک شرکت فناوری بزرگ در بورس تهران.", sentiment: "Positive", source: "Telegram", type: "rumor" },
+                { title: "تحلیلگران پیش‌بینی می‌کنند که شاخص کل بورس در هفته آینده رشد خواهد کرد.", sentiment: "Positive", source: "News", type: "event" },
+                { title: "گزارش‌های ضد و نقیض درباره مذاکرات تجاری جدید.", sentiment: "Negative", source: "Twitter", type: "rumor" },
+                { title: "افزایش قیمت دلار در بازار آزاد نگرانی‌هایی را ایجاد کرده است.", sentiment: "Negative", source: "Telegram", type: "event" }
+            ];
+
+            function getSentimentColor(sentiment) {
+                if (sentiment === 'Positive') return 'text-green-400';
+                if (sentiment === 'Negative') return 'text-red-400';
+                return 'text-yellow-400';
+            }
+
+            function getTranslatedSentiment(sentimentKey) {
+                 const sentimentMap = {
+                    'Positive': translations[currentLanguage].positive,
+                    'Negative': translations[currentLanguage].negative,
+                    'Neutral': translations[currentLanguage].neutral,
+                };
+                return sentimentMap[sentimentKey] || sentimentKey;
+            }
+
+
+            function updateDashboard() {
+                const now = new Date();
+                
+                // Update Gauges
+                const stocksSentiment = getRandomInt(30, 85);
+                const forexSentiment = getRandomInt(20, 70);
+                const cryptoSentiment = getRandomInt(10, 95);
+                stocksChart.updateSeries([stocksSentiment]);
+                forexChart.updateSeries([forexSentiment]);
+                cryptoChart.updateSeries([cryptoSentiment]);
+
+                 // Store current state for AI briefing
+                currentMarketState = {
+                    stocks: stocksSentiment,
+                    forex: forexSentiment,
+                    crypto: cryptoSentiment,
+                    topEvent: mockEvents[0].title
+                };
+
+                // Update Timeline
+                const newTimestamp = new Date().getTime();
+                timelineData.stocks.push([newTimestamp, getRandomInt(-80, 80)]);
+                timelineData.forex.push([newTimestamp, getRandomInt(-60, 60)]);
+                timelineData.crypto.push([newTimestamp, getRandomInt(-95, 95)]);
+
+                if (timelineData.stocks.length > MAX_DATA_POINTS) {
+                    timelineData.stocks.shift();
+                    timelineData.forex.shift();
+                    timelineData.crypto.shift();
+                }
+                
+                timelineChart.updateSeries([
+                    { name: 'Stocks', data: timelineData.stocks },
+                    { name: 'Forex', data: timelineData.forex },
+                    { name: 'Crypto', data: timelineData.crypto },
+                ]);
+
+                // Update Source Chart
+                sourceChart.updateSeries([getRandomInt(1000, 5000), getRandomInt(500, 2000), getRandomInt(800, 3000)]);
+                
+                // Update Language Chart
+                languageChart.updateSeries([{ data: [getRandomInt(5000, 15000), getRandomInt(1000, 4000)] }]);
+
+                // Update Feeds
+                const eventsFeed = document.getElementById('events-feed');
+                const rumorsFeed = document.getElementById('rumors-feed');
+                eventsFeed.innerHTML = '';
+                rumorsFeed.innerHTML = '';
+
+                const shuffledData = mockEvents.sort(() => 0.5 - Math.random());
+                
+                const events = shuffledData.filter(item => item.type === 'event');
+                const rumors = shuffledData.filter(item => item.type === 'rumor');
+
+                const populateFeed = (feedElement, data) => {
+                    data.slice(0, 4).forEach(item => {
+                        const itemEl = document.createElement('div');
+                        itemEl.className = 'p-3 border-b border-gray-700 last:border-b-0';
+                        itemEl.innerHTML = `
+                            <p class="font-medium text-gray-200">${item.title}</p>
+                            <div class="flex justify-between items-center mt-1 text-xs">
+                                <span class="font-semibold ${getSentimentColor(item.sentiment)}">${getTranslatedSentiment(item.sentiment)}</span>
+                                <span class="text-gray-400">${translations[currentLanguage][item.source.toLowerCase()]}</span>
+                            </div>
+                        `;
+                        feedElement.appendChild(itemEl);
+                    });
+                };
+                
+                populateFeed(eventsFeed, events);
+                populateFeed(rumorsFeed, rumors);
+
+
+                // Update Timestamp
+                const lastUpdatedEl = document.getElementById('last-updated');
+                lastUpdatedEl.innerHTML = `<span data-translate-key="lastUpdated">${translations[currentLanguage].lastUpdated}</span>: ${now.toLocaleTimeString()}`;
+
+                // --- AI BRIEFING MODAL LOGIC ---
+                const aiModal = document.getElementById('ai-modal');
+                const openModalBtn = document.getElementById('ai-briefing-btn');
+                const closeModalBtn = document.getElementById('close-modal-btn');
+                const modalBackdrop = document.getElementById('modal-backdrop');
+                const generateBtn = document.getElementById('generate-briefing-btn');
+                const briefingContent = document.getElementById('briefing-content');
+                const briefingSources = document.getElementById('briefing-sources');
+                const sourcesList = document.getElementById('sources-list');
+
+                const openModal = () => aiModal.classList.remove('hidden');
+                const closeModal = () => aiModal.classList.add('hidden');
+
+                openModalBtn.addEventListener('click', openModal);
+                closeModalBtn.addEventListener('click', closeModal);
+                modalBackdrop.addEventListener('click', closeModal);
+
+                generateBtn.addEventListener('click', async () => {
+                    briefingContent.innerHTML = `<div class="flex items-center gap-2"><div class="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div><span>${translations[currentLanguage].generatingAnalysis}</span></div>`;
+                    briefingSources.classList.add('hidden');
+                    sourcesList.innerHTML = '';
+                    generateBtn.disabled = true;
+
+                    const systemPrompt = "You are a world-class financial analyst. Your role is to provide a concise, single-paragraph market briefing based on the provided sentiment data. Ground your analysis in real-world events using your search tool. If the user asks in Persian, respond in Persian.";
+                    const userQuery = `
+                        Generate a market briefing based on the following real-time sentiment data:
+                        - Iran Stock Market Sentiment: ${currentMarketState.stocks}% positive
+                        - Forex Market Sentiment: ${currentMarketState.forex}% positive
+                        - Cryptocurrency Market Sentiment: ${currentMarketState.crypto}% positive
+                        - A key detected event is: "${currentMarketState.topEvent}"
+                        
+                        Explain the likely reasons for this sentiment, citing recent news or events. Keep it brief and professional. The user's preferred language is ${currentLanguage === 'fa' ? 'Persian' : 'English'}.
+                    `;
+                    
+                    const apiKey = ""; 
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+                    
+                    const payload = {
+                        contents: [{ parts: [{ text: userQuery }] }],
+                        tools: [{ "google_search": {} }],
+                        systemInstruction: {
+                            parts: [{ text: systemPrompt }]
+                        },
+                    };
+
+                    try {
+                        const response = await fetch(apiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+
+                        if (!response.ok) {
+                            throw new Error(`API error: ${response.statusText}`);
+                        }
+
+                        const result = await response.json();
+                        const candidate = result.candidates?.[0];
+
+                        if (candidate && candidate.content?.parts?.[0]?.text) {
+                            const text = candidate.content.parts[0].text;
+                            briefingContent.innerHTML = `<p>${text.replace(/\n/g, '<br>')}</p>`;
+
+                            const groundingMetadata = candidate.groundingMetadata;
+                            if (groundingMetadata && groundingMetadata.groundingAttributions) {
+                                const sources = groundingMetadata.groundingAttributions
+                                    .map(attr => ({ uri: attr.web?.uri, title: attr.web?.title }))
+                                    .filter(source => source.uri && source.title);
+
+                                if (sources.length > 0) {
+                                    sourcesList.innerHTML = sources.map((source, index) => 
+                                        `<li><a href="${source.uri}" target="_blank" class="text-blue-400 hover:underline">${index + 1}. ${source.title}</a></li>`
+                                    ).join('');
+                                    briefingSources.classList.remove('hidden');
+                                }
+                            }
+                        } else {
+                            throw new Error("Invalid response structure from API.");
+                        }
+                    } catch (error) {
+                        console.error("Error generating briefing:", error);
+                        briefingContent.innerHTML = `<p class="text-red-400">${translations[currentLanguage].failedToGenerate}</p>`;
+                    } finally {
+                        generateBtn.disabled = false;
+                    }
+                });
+            }
+            // Initial load and periodic updates
+            updateDashboard();
+            setInterval(updateDashboard, 3000); // Update every 3 seconds
+
+            // Setup language switcher
+            document.getElementById('lang-en').addEventListener('click', () => setLanguage('en'));
+            document.getElementById('lang-fa').addEventListener('click', () => setLanguage('fa'));
+       
+            // Set initial language
+            setLanguage('en');
+        });
+    </script>
+</body>
+</html>
+
